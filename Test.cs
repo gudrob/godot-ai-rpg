@@ -10,13 +10,13 @@ public partial class Test : Node
 
 	public async override void _Ready()
 	{
-		string modelPath = "/Users/robertgudat/godot-ai-rpg/model/model.gguf"; // change it to your own model path
-		prompt = "Transcript of a dialog, where A interacts with an Assissent named B. B answers immediately and precise. A: Hello B. What is 10 * 10? B: 100. A: What is 10 * 3? B: 30. A: ";
+		string modelPath = "model"; // change it to your own model path
+		prompt = "<s>[INST] <<SYS>>You are a digital assistant. You answer immediately, precise and as short as possible <</SYS>> What is 10 times 10? [/INST] ";
 
 		// Load model
 		var parameters = new ModelParams(modelPath)
 		{
-			ContextSize = 2048,
+			ContextSize = 8192,
 			Threads = 1,
 		};
 		using var model = LLamaWeights.LoadFromFile(parameters);
@@ -33,7 +33,7 @@ public partial class Test : Node
 			{
 				var sw = System.Diagnostics.Stopwatch.StartNew();
 
-				var texts = session.ChatAsync(prompt, new InferenceParams() { Temperature = 0.6f, AntiPrompts = new List<string> { "A:" } });
+				var texts = session.ChatAsync(prompt, new InferenceParams() { Temperature = 0.1f, AntiPrompts = new List<string> { "[END]" } });
 
 				GD.Print(prompt);
 
@@ -48,7 +48,7 @@ public partial class Test : Node
 				GD.Print(answer);
 				GD.Print("Time taken (ms): "+sw.Elapsed.TotalMilliseconds);
 
-				prompt = "What is 10 * 10?";
+				prompt = "</s><s>[INST] What is 10 times 10 ? [/INST]";
 			}
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 		}

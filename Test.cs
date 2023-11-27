@@ -1,58 +1,113 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Godot;
 
 public partial class Test : Node
 {
-	public string prompt = null;
+    public string prompt = null;
 
-	public string text = "";
+    public string text = "";
 
+    public override void _Ready()
+    {
+        var architecture = RuntimeInformation.ProcessArchitecture;
 
-	public async override void _Ready()
-	{
-		string modelPath = "/Users/-/godot-ai-rpg/model/model.gguf"; // change it to your own model path
-		prompt = $"Loading model ${modelPath}";
+        string modelPath;
+        string workingDirectory;
+        string fileName;
 
-		var label = FindChild("Label", true) as Label;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            if (architecture == Architecture.Arm64)
+            {
+                GD.Print("Detected MacOS on Arm64");
 
-		// Start the child process.
-		Process process = new();
-		// Redirect the output stream of the child process.
-		process.StartInfo.ErrorDialog = false;
-		process.StartInfo.UseShellExecute = false;
-		process.EnableRaisingEvents = true;
-		process.StartInfo.CreateNoWindow = true;
-		process.StartInfo.RedirectStandardError = true;
-		process.StartInfo.RedirectStandardInput = true;
-		process.StartInfo.RedirectStandardOutput = true;
-		process.StartInfo.WorkingDirectory = "/Users/-/godot-ai-rpg/apple-silicon-llama/";
-		process.StartInfo.FileName = "/Users/-/godot-ai-rpg/apple-silicon-llama/main";
-		process.StartInfo.Arguments = $"-m \"{modelPath}\"";
-		process.OutputDataReceived += process_OutputDataReceived;
-		process.ErrorDataReceived += process_ErrorDataReceived;
-		process.Exited += process_Exited;
-		GD.Print("AI Process Start Result: " + process.Start());
+                modelPath = "./model/model.gguf";
+                workingDirectory = "./apple-silicon-llama/";
+                fileName = "./apple-silicon-llama/server";
+            }
+            else
+            {
+                GD.Print("MacOS on " + architecture.ToString() + " is currently unsupported");
+                GetTree().Quit();
+                return;
+            }
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            GD.Print("Windows is currently unsupported");
+            GetTree().Quit();
+            return;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            GD.Print("Linux is currently unsupported");
+            GetTree().Quit();
+            return;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+        {
+            GD.Print("FreeBSD is currently unsupported");
+            GetTree().Quit();
+            return;
+        }
+        else
+        {
+            GD.Print("Your Operating System is unsupported");
+            GetTree().Quit();
+            return;
+        }
 
-		process.BeginErrorReadLine();
-		process.BeginOutputReadLine();
+        StartServer(modelPath, workingDirectory, fileName);
+    }
 
-		void process_Exited(object sender, EventArgs e)
-		{
-			text += process.ExitCode + System.Environment.NewLine;
-			label.SetDeferred("text", text);
-		}
+    public bool StartServer(string modelPath, string workingDirectory, string fileName)
+    {
+        var debugLabel = FindChild("Label") as Label;
 
-		void process_OutputDataReceived(object sender, DataReceivedEventArgs e)
-		{
-			text += e.Data + System.Environment.NewLine;
-			label.SetDeferred("text", text);
-		}
+        Process process = new();
+        process.StartInfo.ErrorDialog = false;
+        process.StartInfo.UseShellExecute = false;
+        process.EnableRaisingEvents = true;
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.RedirectStandardInput = true;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.WorkingDirectory = workingDirectory;
+        process.StartInfo.FileName = fileName;
+        process.StartInfo.Arguments = $"-m \"{modelPath}\"";
+        process.Exited += processExited;
+        process.ErrorDataReceived += processErrorDataReceived;
+        process.OutputDataReceived += processOutputDataReceived;
 
-		void process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-		{
-			text += e.Data + System.Environment.NewLine;
-			label.SetDeferred("text", text);
-		}
-	}
+        if (!process.Start())
+        {
+            GD.Print("Could not start the AI process.");
+            return false;
+        }
+
+        process.BeginErrorReadLine();
+        process.BeginOutputReadLine();
+
+        void processExited(object sender, EventArgs e)
+        {
+            text += process.ExitCode + System.Environment.NewLine;
+            debugLabel.SetDeferred("text", text);
+        }
+
+        void processErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            text += e.Data + System.Environment.NewLine;
+            debugLabel.SetDeferred("text", text);
+        }
+
+        void processOutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            text += e.Data + System.Environment.NewLine;
+            debugLabel.SetDeferred("text", text);
+        }
+
+        return true;
+    }
 }

@@ -1,8 +1,0 @@
-[1701087999] Log start
-[1701087999] Cmd: /Users/robertgudat/godot-ai-rpg/apple-silicon-llama/main -m /Users/robertgudat/godot-ai-rpg/model/model.gguf
-[1701087999] main: build = 1570 (f3b2698)
-[1701087999] main: built with Apple clang version 14.0.3 (clang-1403.0.22.14.1) for arm64-apple-darwin22.4.0
-[1701087999] main: seed  = 1701087999
-[1701087999] main: llama backend init
-[1701087999] main: load the model and apply lora adapter, if any
-[1701087999] main: error: unable to load model

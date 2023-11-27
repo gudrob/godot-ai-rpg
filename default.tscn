@@ -4,3 +4,20 @@
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_xll0n")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Control"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 11.0
+offset_right = 1143.0
+offset_bottom = 637.0
+
+[node name="Label" type="Label" parent="Control/ScrollContainer"]
+layout_mode = 2
+text = "Output"

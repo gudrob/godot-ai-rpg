@@ -1,23 +1,23 @@
 [gd_scene load_steps=2 format=3 uid="uid://s86py3x3v5vd"]
 
-[ext_resource type="Script" path="res://Test.cs" id="1_xll0n"]
+[ext_resource type="Script" path="res://LLaMA2.cs" id="1_778qt"]
 
-[node name="Node3D" type="Node3D"]
-script = ExtResource("1_xll0n")
+[node name="root" type="Node3D"]
+script = ExtResource("1_778qt")
 
-[node name="Control" type="Control" parent="."]
+[node name="debug" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Control"]
+[node name="scroll_container" type="ScrollContainer" parent="debug"]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 11.0
 offset_right = 1143.0
 offset_bottom = 637.0
 
-[node name="Label" type="Label" parent="Control/ScrollContainer"]
+[node name="debug_label" type="Label" parent="debug/scroll_container"]
 layout_mode = 2
 text = "Output"

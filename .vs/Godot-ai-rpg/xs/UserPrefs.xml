@@ -5,18 +5,11 @@
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workbench ActiveDocument="Test.cs">
     <Files>
-      <File FileName="Test.cs" Line="29" Column="36" />
+      <File FileName="Test.cs" Line="29" Column="92" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State name="__root__">
-          <Node name="Godot-ai-rpg">
-            <Node name="Godot-ai-rpg">
-              <Node name="Dependencies" expanded="True" />
-              <Node name="Test.cs" selected="True" />
-            </Node>
-          </Node>
-        </State>
+        <State name="__root__" />
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>

@@ -82,7 +82,7 @@ namespace AIRPG
 
                 var response = Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
 
-                var responseDict = (Dictionary<string,Variant>)Json.ParseString(response);
+                var responseDict = (Dictionary<string, Variant>)Json.ParseString(response);
 
                 return responseDict["content"].ToString();
             }
@@ -205,11 +205,13 @@ namespace AIRPG
 
             StartServer(modelPath, workingDirectory, gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory);
 
+            this.host = host;
+            this.port = port;
         }
 
         private bool StartServer(string modelPath, string workingDirectory, int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory)
         {
-            var debugLabel = FindChild("Label") as Label;
+            var debugLabel = GetParent().FindChild("debug_label", true) as Label;
 
             LLaMAProcess = new();
             LLaMAProcess.StartInfo.ErrorDialog = false;
@@ -221,7 +223,7 @@ namespace AIRPG
             LLaMAProcess.StartInfo.RedirectStandardOutput = true;
             LLaMAProcess.StartInfo.WorkingDirectory = workingDirectory;
             LLaMAProcess.StartInfo.FileName = workingDirectory + "server";
-            LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --n-gpu-layers={gpuLayers} -t {cpuThreads}  --host \"{host}\" -port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "--no-mmap" : "")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
+            LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "--no-mmap" : "")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
             LLaMAProcess.Exited += processExited;
             LLaMAProcess.ErrorDataReceived += processErrorDataReceived;
             LLaMAProcess.OutputDataReceived += processOutputDataReceived;

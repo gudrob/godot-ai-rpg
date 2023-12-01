@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Godot;
+using Godot.Collections;
 
 namespace AIRPG
 {
@@ -24,21 +26,32 @@ namespace AIRPG
 
         private string debugText = "";
 
-        public static async Task<string> ProcessRequest(HttpClient session, string prompt, string systemPrompt = "", int predictTokens = 256, float repeatPenalty = 1f, float temperature = 0.5f)
+        public static async Task<string> Prompt(Session session, string prompt, int predictTokens = 256, float repeatPenalty = 1f, float temperature = 0.5f)
         {
-            if (session.GetStatus() != HttpClient.Status.Body || session.GetStatus() != HttpClient.Status.Connected)
+            var aiCharacterToken = $"{session.aiCharacterName}:";
+            var playerCharacterToken = $"{session.playerCharacterName}:";
+
+            if (session.client.GetStatus() != HttpClient.Status.Body || session.client.GetStatus() != HttpClient.Status.Connected)
             {
                 throw new Exception("Session is not ready yet to be used. Please check if its status is either  HttpClient.Status.Body or HttpClient.Status.Connected");
             }
 
-            var connection = session.Request(HttpClient.Method.Post, "/completion", defaultHeaders, "{"
-            + $"temperature: {temperature},"
-            + $"repeat_penalty: {repeatPenalty},"
-            + $"n_predict: {predictTokens},"
-            + $"cache_promt: {true},"
-            + (systemPrompt == "" ? "" : $"system_prompt: \"{systemPrompt}\",")
-            + $"prompt: \"{prompt}\""
-            + $"stop: [\"</s>\", \"</s>\", \"</s>\"]"
+            if (!session.fullPrompt.ToString().EndsWith(playerCharacterToken))
+            {
+                session.fullPrompt.Append(playerCharacterToken);
+            }
+
+            session.fullPrompt.Append(prompt).Append(aiCharacterToken);
+
+            var connection = session.client.Request(HttpClient.Method.Post, "/completion", defaultHeaders, "{"
+            + $"\"temperature\": {temperature},"
+            + $"\"repeat_penalty\": {repeatPenalty},"
+            + $"\"n_predict\": {predictTokens},"
+            + $"\"cache_promt\": true,"
+            + $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
+            + $"\"slot_id\": -1,"
+            + $"\"stream\": false,"
+            + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"],"
             + "}");
 
             if (connection != Error.Ok)
@@ -46,35 +59,40 @@ namespace AIRPG
                 throw new Exception("Error trying to prompt: " + connection);
             }
 
-            while (session.GetStatus() == HttpClient.Status.Requesting)
+            while (session.client.GetStatus() == HttpClient.Status.Requesting)
             {
                 await Instance.ToSignal(Instance.GetTree(), SceneTree.SignalName.ProcessFrame);
-                session.Poll();
+                session.client.Poll();
             }
 
-            if (session.GetStatus() == HttpClient.Status.Body)
+            if (session.client.GetStatus() == HttpClient.Status.Body)
             {
-                var responseBytes = new byte[session.GetResponseBodyLength()];
+                var responseBytes = new byte[session.client.GetResponseBodyLength()];
                 var index = 0;
-                while (session.GetStatus() == HttpClient.Status.Body)
+                while (session.client.GetStatus() == HttpClient.Status.Body)
                 {
-                    var chunk = session.ReadResponseBodyChunk();
+                    var chunk = session.client.ReadResponseBodyChunk();
                     if (chunk.Length > 0)
                     {
                         Buffer.BlockCopy(chunk, 0, responseBytes, index, chunk.Length);
                         index += chunk.Length;
                     }
-                    session.Poll();
+                    session.client.Poll();
                 }
-                return Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
+
+                var response = Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
+
+                var responseDict = (Dictionary<string,Variant>)Json.ParseString(response);
+
+                return responseDict["content"].ToString();
             }
             else
             {
-                throw new Exception("Invalid session status: " + session.GetStatus());
+                throw new Exception("Invalid session status: " + session.client.GetStatus());
             }
         }
 
-        private async Task<HttpClient> Connect(string host, int port)
+        private async Task<HttpClient> Connect()
         {
             HttpClient client = new();
 
@@ -87,7 +105,7 @@ namespace AIRPG
 
             while (client.GetStatus() == HttpClient.Status.Connecting || client.GetStatus() == HttpClient.Status.Resolving)
             {
-                await Instance.ToSignal(Instance.GetTree(), SceneTree.SignalName.ProcessFrame);
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
                 client.Poll();
             }
 
@@ -99,17 +117,23 @@ namespace AIRPG
             return client;
         }
 
-        public static async Task<HttpClient> StartSession()
+        public static async Task<Session> StartSession(string aiCharacterName, string playerCharacterName)
         {
-            return await Instance.Connect(Instance.host, Instance.port);
+            return new Session()
+            {
+                aiCharacterName = aiCharacterName,
+                playerCharacterName = playerCharacterName,
+                client = await Instance.Connect(),
+                fullPrompt = new()
+            };
         }
 
-        public static void EndEssion(HttpClient client)
+        public static void EndEssion(Session session)
         {
-            if (IsInstanceValid(client))
+            if (IsInstanceValid(session.client))
             {
-                client.Close();
-                client.Free();
+                session.client.Close();
+                session.client.Free();
             }
         }
 
@@ -129,19 +153,15 @@ namespace AIRPG
         {
             var architecture = RuntimeInformation.ProcessArchitecture;
 
-            string modelPath;
+            string modelPath = "./../model/model.gguf";
             string workingDirectory;
-            string fileName;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 if (architecture == Architecture.Arm64)
                 {
                     GD.Print("Detected MacOS on Arm64");
-
-                    modelPath = "./../model/model.gguf";
                     workingDirectory = "./apple-silicon-llama/";
-                    fileName = "./apple-silicon-llama/server";
                 }
                 else
                 {
@@ -152,9 +172,17 @@ namespace AIRPG
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                GD.Print("Windows is currently unsupported");
-                GetTree().Quit();
-                return;
+                if (architecture == Architecture.X64)
+                {
+                    GD.Print("Detected Windows on X64");
+                    workingDirectory = "./win-x64-llama/";
+                }
+                else
+                {
+                    GD.Print("Windows on " + architecture.ToString() + " is currently unsupported");
+                    GetTree().Quit();
+                    return;
+                }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -175,11 +203,11 @@ namespace AIRPG
                 return;
             }
 
-            StartServer(modelPath, workingDirectory, fileName, gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory);
+            StartServer(modelPath, workingDirectory, gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory);
 
         }
 
-        private bool StartServer(string modelPath, string workingDirectory, string fileName, int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory)
+        private bool StartServer(string modelPath, string workingDirectory, int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory)
         {
             var debugLabel = FindChild("Label") as Label;
 
@@ -192,7 +220,7 @@ namespace AIRPG
             LLaMAProcess.StartInfo.RedirectStandardInput = true;
             LLaMAProcess.StartInfo.RedirectStandardOutput = true;
             LLaMAProcess.StartInfo.WorkingDirectory = workingDirectory;
-            LLaMAProcess.StartInfo.FileName = fileName;
+            LLaMAProcess.StartInfo.FileName = workingDirectory + "server";
             LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --n-gpu-layers={gpuLayers} -t {cpuThreads}  --host \"{host}\" -port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "--no-mmap" : "")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
             LLaMAProcess.Exited += processExited;
             LLaMAProcess.ErrorDataReceived += processErrorDataReceived;
@@ -233,7 +261,8 @@ namespace AIRPG
     {
         public HttpClient client;
         public StringBuilder fullPrompt;
-        public string characterName;  
+        public string aiCharacterName;
+        public string playerCharacterName;
     }
 
 }

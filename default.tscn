@@ -1,9 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://s86py3x3v5vd"]
+[gd_scene load_steps=3 format=3 uid="uid://s86py3x3v5vd"]
 
-[ext_resource type="Script" path="res://LLaMA2.cs" id="1_778qt"]
+[ext_resource type="Script" path="res://LLaMA2.cs" id="1_xll0n"]
+[ext_resource type="Script" path="res://Game.cs" id="2_i67ii"]
 
 [node name="root" type="Node3D"]
-script = ExtResource("1_778qt")
+script = ExtResource("1_xll0n")
 
 [node name="debug" type="Control" parent="."]
 layout_mode = 3
@@ -11,13 +12,16 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="scroll_container" type="ScrollContainer" parent="debug"]
+[node name="debug_container" type="ScrollContainer" parent="debug"]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 11.0
 offset_right = 1143.0
 offset_bottom = 637.0
 
-[node name="debug_label" type="Label" parent="debug/scroll_container"]
+[node name="debug_label" type="Label" parent="debug/debug_container"]
 layout_mode = 2
 text = "Output"
+
+[node name="game" type="Node3D" parent="."]
+script = ExtResource("2_i67ii")

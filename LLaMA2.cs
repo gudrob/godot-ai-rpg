@@ -31,7 +31,7 @@ namespace AIRPG
             var aiCharacterToken = $"{session.aiCharacterName}:";
             var playerCharacterToken = $"{session.playerCharacterName}:";
 
-            if (session.client.GetStatus() != HttpClient.Status.Body || session.client.GetStatus() != HttpClient.Status.Connected)
+            if (session.client.GetStatus() != HttpClient.Status.Body && session.client.GetStatus() != HttpClient.Status.Connected)
             {
                 throw new Exception("Session is not ready yet to be used. Please check if its status is either  HttpClient.Status.Body or HttpClient.Status.Connected");
             }
@@ -61,9 +61,11 @@ namespace AIRPG
 
             while (session.client.GetStatus() == HttpClient.Status.Requesting)
             {
-                await Instance.ToSignal(Instance.GetTree(), SceneTree.SignalName.ProcessFrame);
                 session.client.Poll();
+                await Instance.ToSignal(Instance.GetTree(), SceneTree.SignalName.ProcessFrame);
             }
+
+            GD.Print(session.client.GetStatus());
 
             if (session.client.GetStatus() == HttpClient.Status.Body)
             {
@@ -78,6 +80,7 @@ namespace AIRPG
                         index += chunk.Length;
                     }
                     session.client.Poll();
+                    await Instance.ToSignal(Instance.GetTree(), SceneTree.SignalName.ProcessFrame);
                 }
 
                 var response = Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
@@ -144,7 +147,7 @@ namespace AIRPG
             Instance = this;
         }
 
-        public static void Initialize(int gpuLayers = 20, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
+        public static void Initialize(int gpuLayers = 20, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 1024, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
         {
             Instance.InitializeServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMap, alwaysKeepInMemory);
         }
@@ -223,7 +226,7 @@ namespace AIRPG
             LLaMAProcess.StartInfo.RedirectStandardOutput = true;
             LLaMAProcess.StartInfo.WorkingDirectory = workingDirectory;
             LLaMAProcess.StartInfo.FileName = workingDirectory + "server";
-            LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "--no-mmap" : "")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
+            LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "" : "--no-mmap")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
             LLaMAProcess.Exited += processExited;
             LLaMAProcess.ErrorDataReceived += processErrorDataReceived;
             LLaMAProcess.OutputDataReceived += processOutputDataReceived;

@@ -26,4 +26,22 @@ layout_mode = 2
 text = "Output"
 
 [node name="game" type="Node3D" parent="."]
+
+[node name="chat" type="Control" parent="game"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
 script = ExtResource("2_i67ii")
+
+[node name="chat_history" type="Label" parent="game/chat"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="chat_input" type="LineEdit" parent="game/chat"]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 587.0
+offset_right = 1132.0
+offset_bottom = 626.0

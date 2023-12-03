@@ -18,3 +18,11 @@ config/icon="res://icon.svg"
 [dotnet]
 
 project/assembly_name="Godot-ai-rpg"
+
+[network]
+
+limits/debugger/max_chars_per_second=65536
+limits/debugger/max_queued_messages=4096
+limits/debugger/max_errors_per_second=800
+limits/debugger/max_warnings_per_second=800
+limits/webrtc/max_channel_in_buffer_kb=128

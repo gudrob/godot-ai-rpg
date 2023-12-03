@@ -15,18 +15,15 @@ namespace AIRPG
 {
     public partial class LLaMA2 : Node
     {
-        private static readonly string[] defaultHeaders = new string[]
-            {
-                "Content-Type: application/json"
-            };
-
         private static LLaMA2 Instance;
 
         private static Process LLaMAProcess;
 
         private string completionAddress;
 
-        public static async Task<string> Prompt(Session session, string prompt, int predictTokens = 256, float repeatPenalty = 1f, float temperature = 0.5f)
+        private HttpService httpService;
+
+        public static async Task<string> Prompt(Session session, string prompt, int predictTokens = 192, float repeatPenalty = 1.1764705882352942f, float temperature = 0.25f)
         {
             var aiCharacterToken = $"{session.aiCharacterName}:";
             var playerCharacterToken = $"{session.playerCharacterName}:";
@@ -49,11 +46,7 @@ namespace AIRPG
             + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"]"
             + "}";
 
-            GD.Print(body);
-
-            GD.Print(Instance.completionAddress);
-
-            var response = await PostAsync(Instance.completionAddress, body, "application/json");
+            var response = await Instance.httpService.PostAsync(Instance.completionAddress, body, "application/json");
 
             GD.Print(response);
 
@@ -62,14 +55,15 @@ namespace AIRPG
             return responseDict["content"].ToString();
         }
 
-        public static Session StartSession(string aiCharacterName, string playerCharacterName)
+        public static Session StartSession(string aiCharacterName, string playerCharacterName, string basePrompt)
         {
             return new Session()
             {
                 aiCharacterName = aiCharacterName,
                 playerCharacterName = playerCharacterName,
-                fullPrompt = new()
+                fullPrompt = new(basePrompt)
             };
+
         }
 
         public override void _Ready()
@@ -78,10 +72,12 @@ namespace AIRPG
 
             Instance = this;
 
+            httpService = new();
+
             Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
         }
 
-        public static void Initialize(int gpuLayers = 33, int cpuThreads = 1, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 1024, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
+        public static void Initialize(int gpuLayers = 33, int cpuThreads = 1, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
         {
             Instance.InitializeServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMap, alwaysKeepInMemory);
         }
@@ -187,28 +183,6 @@ namespace AIRPG
             }
 
             return true;
-        }
-        public static async Task<string> PostAsync(string uri, string data, string contentType, string method = "POST")
-        {
-            byte[] dataBytes = Encoding.UTF8.GetBytes(data);
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            request.ContentLength = dataBytes.Length;
-            request.ContentType = contentType;
-            request.Method = method;
-
-            using (Stream requestBody = request.GetRequestStream())
-            {
-                await requestBody.WriteAsync(dataBytes, 0, dataBytes.Length);
-            }
-
-            using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new(stream))
-            {
-                return await reader.ReadToEndAsync();
-            }
         }
     }
 

@@ -15,11 +15,8 @@ public partial class Game : Node
     {
         LLaMA2.Initialize();
 
-        session = await LLaMA2.StartSession("LLaMA", "User");
-
         chatHistory = FindChild("chat_history") as Label;
         chatInput = FindChild("chat_input") as LineEdit;
- 
     }
 
     public async override void _Process(double delta)
@@ -29,6 +26,8 @@ public partial class Game : Node
             try
             {
                 locked = true;
+
+                session ??= await LLaMA2.StartSession("LLaMA", "User");
 
                 var input = chatInput.Text;
 

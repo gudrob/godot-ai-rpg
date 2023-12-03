@@ -1,7 +1,9 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Godot;
@@ -43,7 +45,7 @@ namespace AIRPG
 
             session.fullPrompt.Append(prompt).Append(aiCharacterToken);
 
-            var connection = session.client.Request(HttpClient.Method.Post, "/completion", defaultHeaders, "{"
+            var body = "{"
             + $"\"temperature\": {temperature},"
             + $"\"repeat_penalty\": {repeatPenalty},"
             + $"\"n_predict\": {predictTokens},"
@@ -51,8 +53,13 @@ namespace AIRPG
             + $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
             + $"\"slot_id\": -1,"
             + $"\"stream\": false,"
-            + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"],"
-            + "}");
+            + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"]"
+            + "}";
+
+            GD.Print(body);
+
+            var connection = session.client.Request(HttpClient.Method.Post, "/completion", defaultHeaders, body);
+
 
             if (connection != Error.Ok)
             {
@@ -65,12 +72,11 @@ namespace AIRPG
                 await Instance.ToSignal(Instance.GetTree(), SceneTree.SignalName.ProcessFrame);
             }
 
-            GD.Print(session.client.GetStatus());
-
             if (session.client.GetStatus() == HttpClient.Status.Body)
             {
                 var responseBytes = new byte[session.client.GetResponseBodyLength()];
                 var index = 0;
+
                 while (session.client.GetStatus() == HttpClient.Status.Body)
                 {
                     var chunk = session.client.ReadResponseBodyChunk();
@@ -84,6 +90,8 @@ namespace AIRPG
                 }
 
                 var response = Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
+
+                GD.Print(response);
 
                 var responseDict = (Dictionary<string, Variant>)Json.ParseString(response);
 
@@ -145,9 +153,11 @@ namespace AIRPG
             if (Instance != null) return;
 
             Instance = this;
+
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
         }
 
-        public static void Initialize(int gpuLayers = 20, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 1024, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
+        public static void Initialize(int gpuLayers = 33, int cpuThreads = 1, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 1024, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
         {
             Instance.InitializeServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMap, alwaysKeepInMemory);
         }

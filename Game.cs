@@ -27,9 +27,9 @@ public partial class Game : Node
             {
                 locked = true;
 
-                session ??= await LLaMA2.StartSession("LLaMA", "User");
+                session ??= LLaMA2.StartSession("LLaMA", "User");
 
-                var input = chatInput.Text;
+                var input = chatInput.Text + " ";
 
                 chatInput.Text = "";
 

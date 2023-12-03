@@ -35,14 +35,20 @@ offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("2_i67ii")
 
-[node name="chat_history" type="Label" parent="game/chat"]
+[node name="ScrollContainer" type="ScrollContainer" parent="game/chat"]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 10.0
+offset_top = 11.0
+offset_right = 1143.0
+offset_bottom = 586.0
+horizontal_scroll_mode = 0
+
+[node name="chat_history" type="Label" parent="game/chat/ScrollContainer"]
+layout_mode = 2
 
 [node name="chat_input" type="LineEdit" parent="game/chat"]
-layout_mode = 0
-offset_left = 29.0
-offset_top = 587.0
-offset_right = 1132.0
-offset_bottom = 626.0
+layout_mode = 2
+offset_left = 16.0
+offset_top = 598.0
+offset_right = 1136.0
+offset_bottom = 638.0

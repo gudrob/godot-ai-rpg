@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -22,21 +24,12 @@ namespace AIRPG
 
         private static Process LLaMAProcess;
 
-        private string host;
-
-        private int port;
-
-        private string debugText = "";
+        private string completionAddress;
 
         public static async Task<string> Prompt(Session session, string prompt, int predictTokens = 256, float repeatPenalty = 1f, float temperature = 0.5f)
         {
             var aiCharacterToken = $"{session.aiCharacterName}:";
             var playerCharacterToken = $"{session.playerCharacterName}:";
-
-            if (session.client.GetStatus() != HttpClient.Status.Body && session.client.GetStatus() != HttpClient.Status.Connected)
-            {
-                throw new Exception("Session is not ready yet to be used. Please check if its status is either  HttpClient.Status.Body or HttpClient.Status.Connected");
-            }
 
             if (!session.fullPrompt.ToString().EndsWith(playerCharacterToken))
             {
@@ -58,94 +51,25 @@ namespace AIRPG
 
             GD.Print(body);
 
-            var connection = session.client.Request(HttpClient.Method.Post, "/completion", defaultHeaders, body);
+            GD.Print(Instance.completionAddress);
 
+            var response = await PostAsync(Instance.completionAddress, body, "application/json");
 
-            if (connection != Error.Ok)
-            {
-                throw new Exception("Error trying to prompt: " + connection);
-            }
+            GD.Print(response);
 
-            while (session.client.GetStatus() == HttpClient.Status.Requesting)
-            {
-                session.client.Poll();
-                await Instance.ToSignal(Instance.GetTree(), SceneTree.SignalName.ProcessFrame);
-            }
+            var responseDict = (Dictionary<string, Variant>)Json.ParseString(response);
 
-            if (session.client.GetStatus() == HttpClient.Status.Body)
-            {
-                var responseBytes = new byte[session.client.GetResponseBodyLength()];
-                var index = 0;
-
-                while (session.client.GetStatus() == HttpClient.Status.Body)
-                {
-                    var chunk = session.client.ReadResponseBodyChunk();
-                    if (chunk.Length > 0)
-                    {
-                        Buffer.BlockCopy(chunk, 0, responseBytes, index, chunk.Length);
-                        index += chunk.Length;
-                    }
-                    session.client.Poll();
-                    await Instance.ToSignal(Instance.GetTree(), SceneTree.SignalName.ProcessFrame);
-                }
-
-                var response = Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
-
-                GD.Print(response);
-
-                var responseDict = (Dictionary<string, Variant>)Json.ParseString(response);
-
-                return responseDict["content"].ToString();
-            }
-            else
-            {
-                throw new Exception("Invalid session status: " + session.client.GetStatus());
-            }
+            return responseDict["content"].ToString();
         }
 
-        private async Task<HttpClient> Connect()
-        {
-            HttpClient client = new();
-
-            var connection = client.ConnectToHost(host, port);
-
-            if (connection != Error.Ok)
-            {
-                throw new Exception("There was an error connecting to the AI's endpoint: " + connection);
-            }
-
-            while (client.GetStatus() == HttpClient.Status.Connecting || client.GetStatus() == HttpClient.Status.Resolving)
-            {
-                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-                client.Poll();
-            }
-
-            if (client.GetStatus() != HttpClient.Status.Connected)
-            {
-                throw new Exception("There was an error connecting to the AI's endpoint: " + client.GetStatus());
-            }
-
-            return client;
-        }
-
-        public static async Task<Session> StartSession(string aiCharacterName, string playerCharacterName)
+        public static Session StartSession(string aiCharacterName, string playerCharacterName)
         {
             return new Session()
             {
                 aiCharacterName = aiCharacterName,
                 playerCharacterName = playerCharacterName,
-                client = await Instance.Connect(),
                 fullPrompt = new()
             };
-        }
-
-        public static void EndEssion(Session session)
-        {
-            if (IsInstanceValid(session.client))
-            {
-                session.client.Close();
-                session.client.Free();
-            }
         }
 
         public override void _Ready()
@@ -218,14 +142,11 @@ namespace AIRPG
 
             StartServer(modelPath, workingDirectory, gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory);
 
-            this.host = host;
-            this.port = port;
+            completionAddress = $"http://{host}:{port}/completion";
         }
 
         private bool StartServer(string modelPath, string workingDirectory, int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory)
         {
-            var debugLabel = GetParent().FindChild("debug_label", true) as Label;
-
             LLaMAProcess = new();
             LLaMAProcess.StartInfo.ErrorDialog = false;
             LLaMAProcess.StartInfo.UseShellExecute = false;
@@ -252,29 +173,47 @@ namespace AIRPG
 
             void processExited(object sender, EventArgs e)
             {
-                debugText += LLaMAProcess.ExitCode + System.Environment.NewLine;
-                debugLabel.SetDeferred("text", debugText);
+                GD.PrintRaw(LLaMAProcess.ExitCode + System.Environment.NewLine);
             }
 
             void processErrorDataReceived(object sender, DataReceivedEventArgs e)
             {
-                debugText += e.Data + System.Environment.NewLine;
-                debugLabel.SetDeferred("text", debugText);
+                GD.Print(e.Data);
             }
 
             void processOutputDataReceived(object sender, DataReceivedEventArgs e)
             {
-                debugText += e.Data + System.Environment.NewLine;
-                debugLabel.SetDeferred("text", debugText);
+                GD.Print(e.Data);
             }
 
             return true;
+        }
+        public static async Task<string> PostAsync(string uri, string data, string contentType, string method = "POST")
+        {
+            byte[] dataBytes = Encoding.UTF8.GetBytes(data);
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            request.ContentLength = dataBytes.Length;
+            request.ContentType = contentType;
+            request.Method = method;
+
+            using (Stream requestBody = request.GetRequestStream())
+            {
+                await requestBody.WriteAsync(dataBytes, 0, dataBytes.Length);
+            }
+
+            using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader reader = new(stream))
+            {
+                return await reader.ReadToEndAsync();
+            }
         }
     }
 
     public class Session
     {
-        public HttpClient client;
         public StringBuilder fullPrompt;
         public string aiCharacterName;
         public string playerCharacterName;

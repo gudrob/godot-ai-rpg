@@ -1,8 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -28,12 +26,16 @@ namespace AIRPG
             var aiCharacterToken = $"{session.aiCharacterName}:";
             var playerCharacterToken = $"{session.playerCharacterName}:";
 
-            if (!session.fullPrompt.ToString().EndsWith(playerCharacterToken))
-            {
-                session.fullPrompt.Append(playerCharacterToken);
-            }
+            session.fullPrompt
+                .Append(System.Environment.NewLine)
+                .Append(playerCharacterToken)
+                .Append(' ');
 
-            session.fullPrompt.Append(prompt).Append(aiCharacterToken);
+            session.fullPrompt
+                .Append(prompt)
+                .Append(System.Environment.NewLine)
+                .Append(aiCharacterToken)
+                .Append(' ');
 
             var body = "{"
             + $"\"temperature\": {temperature},"
@@ -52,7 +54,11 @@ namespace AIRPG
 
             var responseDict = (Dictionary<string, Variant>)Json.ParseString(response);
 
-            return responseDict["content"].ToString();
+            var res = responseDict["content"].ToString();
+
+            session.fullPrompt.Append(res);
+
+            return res;
         }
 
         public static Session StartSession(string aiCharacterName, string playerCharacterName, string basePrompt)
@@ -75,9 +81,14 @@ namespace AIRPG
             httpService = new();
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
+
+            foreach (var process in Process.GetProcessesByName("server"))
+            {
+                process.Kill();
+            }
         }
 
-        public static void Initialize(int gpuLayers = 33, int cpuThreads = 1, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
+        public static void Initialize(int gpuLayers = 33, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 1024, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
         {
             Instance.InitializeServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMap, alwaysKeepInMemory);
         }

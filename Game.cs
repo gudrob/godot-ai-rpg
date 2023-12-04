@@ -33,9 +33,9 @@ public partial class Game : Node
 
                 chatInput.Text = "";
 
-                var response = await LLaMA2.Prompt(session, input);
+                await LLaMA2.Prompt(session, input);
 
-                chatHistory.Text += session.playerCharacterName + ": " + input + session.aiCharacterName + ": " + response;
+                chatHistory.Text = session.fullPrompt.ToString();
             }
             finally
             {

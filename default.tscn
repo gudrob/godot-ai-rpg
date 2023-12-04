@@ -44,7 +44,9 @@ offset_bottom = 586.0
 horizontal_scroll_mode = 0
 
 [node name="chat_history" type="Label" parent="game/chat/ScrollContainer"]
+custom_minimum_size = Vector2(1130, 550)
 layout_mode = 2
+autowrap_mode = 3
 
 [node name="chat_input" type="LineEdit" parent="game/chat"]
 layout_mode = 2

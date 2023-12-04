@@ -21,7 +21,7 @@ namespace AIRPG
 
 		private HttpService httpService;
 
-		public static async Task<string> Prompt(Session session, string prompt, int predictTokens = 192, float repeatPenalty = 1.1764705882352942f, float temperature = 0.25f)
+		public static async Task<string> Prompt(Session session, string prompt, int predictTokens = 192, float repeatPenalty = 1.1764705882352942f, float temperature = 0.4f)
 		{
 			var aiCharacterToken = $"{session.aiCharacterName}:";
 			var playerCharacterToken = $"{session.playerCharacterName}:";
@@ -34,8 +34,7 @@ namespace AIRPG
 			session.fullPrompt
 				.Append(prompt)
 				.Append(System.Environment.NewLine)
-				.Append(aiCharacterToken)
-				.Append(' ');
+				.Append(aiCharacterToken);
 
 			var body = "{"
 			+ $"\"temperature\": {temperature},"
@@ -45,6 +44,7 @@ namespace AIRPG
 			+ $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
 			+ $"\"slot_id\": -1,"
 			+ $"\"stream\": false,"
+			+ $"\"mirostat\": 0.1,"
 			+ $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"]"
 			+ "}";
 
@@ -58,7 +58,9 @@ namespace AIRPG
 
 			var res = responseDict["content"].ToString();
 
-			session.fullPrompt.Append(res);
+			session.fullPrompt
+				.Append(' ')
+				.Append(res);
 
 			return res;
 		}

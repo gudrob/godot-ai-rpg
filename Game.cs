@@ -27,7 +27,7 @@ public partial class Game : Node
 			{
 				locked = true;
 
-				session ??= LLaMA2.StartSession("Llama", "User", "A transcript of a dialog between a User and a digital assistant named Llama. Llama answers short and precise.");
+				session ??= LLaMA2.StartSession("Llama", "User", "A transcript of a dialog between a User and a digital assistant named Llama. Llama answers short and precise. Llama does not use symbols or emojis, only letters and numbers.");
 
 				var input = chatInput.Text + " ";
 

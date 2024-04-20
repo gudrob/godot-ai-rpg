@@ -36,6 +36,6 @@ public class HttpService
             RequestUri = new Uri(uri)
         };
 
-        return await _client.SendAsync(requestMessage);
+        return await _client.SendAsync(requestMessage,HttpCompletionOption.ResponseHeadersRead);
     }
 }

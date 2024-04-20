@@ -48,33 +48,22 @@ namespace AIRPG
             + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"]"
             + "}";
 
+            var sw = Stopwatch.StartNew();
+
             var response = await Instance.httpService.PostAsync(Instance.completionAddress, body, "application/json");
 
-            StringBuilder sb = new();
             byte[] buf = new byte[8192];
-            var resStream = await response.Content.ReadAsStreamAsync();
-            string tmpString = null;
-            int count;
-            do
+            int bytesRead;
+
+            var stream = await response.Content.ReadAsStreamAsync();
+
+            string tmpString = "";
+
+            while ((bytesRead = await stream.ReadAsync(buf, 0, buf.Length)) > 0)
             {
-                count = resStream.Read(buf, 0, buf.Length);
-                if (count != 0)
-                {
-                    tmpString = Encoding.ASCII.GetString(buf, 0, count);
-                    sb.Append(tmpString);
-                }
-            } while (count > 0);
-
-            GD.Print(tmpString);
-
-            var chunks = tmpString.Split("data: ");
-
-            foreach (var chunk in chunks)
-            {
-                var chunkTrimmed = chunk.Trim();
-
+                string chunk = Encoding.UTF8.GetString(buf, 0, bytesRead);
+                var chunkTrimmed = chunk.Trim().Substring(5);
                 if (chunkTrimmed.Length == 0) continue;
-
                 try
                 {
                     var responseDict = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(chunkTrimmed);
@@ -85,6 +74,7 @@ namespace AIRPG
                 {
                     GD.Print(ex);
                 }
+                tmpString += chunk;
             }
         }
 
@@ -115,7 +105,7 @@ namespace AIRPG
             }
         }
 
-        public static void Initialize(int gpuLayers = 33, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 1024, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
+        public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 3, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
         {
             Instance.InitializeServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMap, alwaysKeepInMemory);
         }
@@ -191,7 +181,7 @@ namespace AIRPG
             LLaMAProcess.StartInfo.RedirectStandardOutput = true;
             LLaMAProcess.StartInfo.WorkingDirectory = workingDirectory;
             LLaMAProcess.StartInfo.FileName = workingDirectory + "server";
-            LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "" : "--no-mmap")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
+            LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --log-format text --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "" : "--no-mmap")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
             LLaMAProcess.Exited += processExited;
             LLaMAProcess.ErrorDataReceived += processErrorDataReceived;
             LLaMAProcess.OutputDataReceived += processOutputDataReceived;

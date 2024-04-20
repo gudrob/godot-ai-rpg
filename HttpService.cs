@@ -25,19 +25,17 @@ public class HttpService
         return await response.Content.ReadAsStringAsync();
     }
 
-    public async Task<string> PostAsync(string uri, string data, string contentType)
+    public async Task<HttpResponseMessage> PostAsync(string uri, string data, string contentType)
     {
         using HttpContent content = new StringContent(data, Encoding.UTF8, contentType);
 
-        HttpRequestMessage requestMessage = new HttpRequestMessage()
+        HttpRequestMessage requestMessage = new()
         {
             Content = content,
             Method = HttpMethod.Post,
             RequestUri = new Uri(uri)
         };
 
-        using HttpResponseMessage response = await _client.SendAsync(requestMessage);
-
-        return await response.Content.ReadAsStringAsync();
+        return await _client.SendAsync(requestMessage);
     }
 }

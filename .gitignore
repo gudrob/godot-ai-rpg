@@ -16,3 +16,9 @@ mono_crash.*.json
 
 model/*
 *.log
+
+.vs/Godot-ai-rpg/v17/
+
+.vs/Godot-ai-rpg/
+
+Godot-ai-rpg.csproj.old.*

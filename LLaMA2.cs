@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Godot;
 using Godot.Collections;
+using System.Text.Json;
 
 namespace AIRPG
 {
@@ -44,21 +45,49 @@ namespace AIRPG
             + $"\"cache_promt\": true,"
             + $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
             + $"\"slot_id\": -1,"
-            + $"\"stream\": false,"
+            + $"\"stream\": true,"
             + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"]"
             + "}";
 
             var response = await Instance.httpService.PostAsync(Instance.completionAddress, body, "application/json");
 
-            GD.Print(response);
+            StringBuilder sb = new();
+            byte[] buf = new byte[8192];
+            var resStream = await response.Content.ReadAsStreamAsync();
+            string tmpString = null;
+            int count;
+            do
+            {
+                count = resStream.Read(buf, 0, buf.Length);
+                if (count != 0)
+                {
+                    tmpString = Encoding.ASCII.GetString(buf, 0, count);
+                    sb.Append(tmpString);
+                }
+            } while (count > 0);
 
-            var responseDict = (Dictionary<string, Variant>)Json.ParseString(response);
+            GD.Print(tmpString);
+            var chunks = tmpString.Split("data: ");
+            StringBuilder sb2 = new();
 
-            var res = responseDict["content"].ToString();
+            foreach (var chunk in chunks)
+            {
 
-            session.fullPrompt.Append(res);
+                try
+                {
+                    var responseDict = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(chunk);
+                    var res = responseDict["content"].ToString();
+                    sb2.Append(res);
+                }
+                catch (Exception ex)
+                {
+                    GD.Print(ex);
+                }
+            }
 
-            return res;
+            var fullString = sb2.ToString();
+            session.fullPrompt.Append(fullString);
+            return fullString;
         }
 
         public static Session StartSession(string aiCharacterName, string playerCharacterName, string basePrompt)

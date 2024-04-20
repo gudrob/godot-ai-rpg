@@ -22,3 +22,5 @@ model/*
 .vs/Godot-ai-rpg/
 
 Godot-ai-rpg.csproj.old.*
+
+*csproj.old*

@@ -1,7 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://s86py3x3v5vd"]
+[gd_scene load_steps=6 format=3 uid="uid://s86py3x3v5vd"]
 
 [ext_resource type="Script" path="res://LLaMA2.cs" id="1_xll0n"]
 [ext_resource type="Script" path="res://Game.cs" id="2_i67ii"]
+[ext_resource type="Script" path="res://scripts/SpeechUIManager.cs" id="3_kt4kr"]
+[ext_resource type="Script" path="res://scripts/SpeechRecognizer.cs" id="4_4afkc"]
+
+[sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_qiane"]
 
 [node name="root" type="Node3D"]
 
@@ -31,8 +35,8 @@ text = "Output"
 [node name="chat" type="Control" parent="game"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 1152.0
+offset_bottom = 529.0
 script = ExtResource("2_i67ii")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="game/chat"]
@@ -44,13 +48,66 @@ offset_bottom = 586.0
 horizontal_scroll_mode = 0
 
 [node name="chat_history" type="Label" parent="game/chat/ScrollContainer"]
-custom_minimum_size = Vector2(1130, 550)
+custom_minimum_size = Vector2(1130, 500)
 layout_mode = 2
 autowrap_mode = 3
 
 [node name="chat_input" type="LineEdit" parent="game/chat"]
 layout_mode = 2
-offset_left = 16.0
-offset_top = 598.0
+offset_left = 568.0
+offset_top = 574.0
 offset_right = 1136.0
+offset_bottom = 637.0
+
+[node name="speech" type="Control" parent="." node_paths=PackedStringArray("speechStartButton", "speechResult", "speechRecognizer", "speechAutosend")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_kt4kr")
+speechStartButton = NodePath("speech_button")
+speechResult = NodePath("speech_result")
+speechRecognizer = NodePath("speech_recognizer")
+speechAutosend = NodePath("speech_autosend")
+
+[node name="speech_panel" type="Panel" parent="speech"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 539.0
+offset_right = 546.0
 offset_bottom = 638.0
+
+[node name="speech_result" type="Label" parent="speech"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 581.0
+offset_right = 542.0
+offset_bottom = 635.0
+autowrap_mode = 3
+
+[node name="speech_button" type="Button" parent="speech"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 543.0
+offset_right = 542.0
+offset_bottom = 574.0
+text = "Start Listening"
+
+[node name="microphone_stream" type="AudioStreamPlayer" parent="speech"]
+stream = SubResource("AudioStreamMicrophone_qiane")
+autoplay = true
+bus = &"Record"
+
+[node name="speech_recognizer" type="Node" parent="speech"]
+script = ExtResource("4_4afkc")
+
+[node name="speech_autosend" type="CheckBox" parent="speech"]
+layout_mode = 0
+offset_left = 572.0
+offset_top = 540.0
+offset_right = 596.0
+offset_bottom = 564.0
+button_pressed = true
+text = " Autosend recognized speech"

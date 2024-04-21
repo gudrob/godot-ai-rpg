@@ -20,7 +20,7 @@ namespace AIRPG
         private string completionAddress;
 
         private HttpService httpService;
-        public static async Task Prompt(Session session, string prompt, int predictTokens = 192, float repeatPenalty = 1.1764705882352942f, float temperature = 0.25f)
+        public static async Task Prompt(Session session, string prompt, int predictTokens = 192, float repeatPenalty = 1.5f, float temperature = 0.2f)
         {
             var aiCharacterToken = $"{session.aiCharacterName}:";
             var playerCharacterToken = $"{session.playerCharacterName}:";
@@ -67,7 +67,7 @@ namespace AIRPG
                     GD.Print("Time until first byte: " + sw.Elapsed.TotalMilliseconds + " ms");
                 }
                 string chunk = Encoding.UTF8.GetString(buf, 0, bytesRead);
-                var chunkTrimmed = chunk.Trim().Substring(5);
+                var chunkTrimmed = chunk.Trim()[5..];
                 if (chunkTrimmed.Length == 0) continue;
                 try
                 {
@@ -213,7 +213,7 @@ namespace AIRPG
 
             void processOutputDataReceived(object sender, DataReceivedEventArgs e)
             {
-                GD.Print(e.Data);
+                //GD.Print(e.Data);
             }
 
             return true;

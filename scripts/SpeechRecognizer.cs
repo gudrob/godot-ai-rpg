@@ -14,9 +14,9 @@ public partial class SpeechRecognizer : Node
 	[Export(PropertyHint.None, "The name of the bus that contains the record effect")]
 	string recordBusName = "Record";
 	[Export(PropertyHint.None, "Stop recognition after x milliseconds")]
-	long timeoutInMS = 10000;
+	long timeoutInMS = 7000;
 	[Export(PropertyHint.None, "Stop recognition if there is no change in output for x milliseconds.")]
-	long noChangeTimeoutInMS = 3000;
+	long noChangeTimeoutInMS = 1100;
 	[Export(PropertyHint.None, "Don't stop recongizer until timeout.")]
 	bool continuousRecognition = false;
 	[Signal]
@@ -32,7 +32,7 @@ public partial class SpeechRecognizer : Node
 	private ulong recordTimeStart;
 	private ulong noChangeTimeOutStart;
 	private CancellationTokenSource cancelToken;
-	private double processInterval = 0.2;
+	private double processInterval = 0.15;
 
 	public override void _Ready()
 	{
@@ -85,7 +85,7 @@ public partial class SpeechRecognizer : Node
 
 	private void StartContinuousSpeechRecognition()
 	{
-		_ = Task.Factory.StartNew(async () =>
+		System.Threading.ThreadPool.QueueUserWorkItem(async (_)=>
 		{
 			while (!cancelToken.IsCancellationRequested)
 			{

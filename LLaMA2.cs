@@ -20,7 +20,6 @@ namespace AIRPG
         private string completionAddress;
 
         private HttpService httpService;
-
         public static async Task Prompt(Session session, string prompt, int predictTokens = 192, float repeatPenalty = 1.1764705882352942f, float temperature = 0.25f)
         {
             var aiCharacterToken = $"{session.aiCharacterName}:";
@@ -41,7 +40,7 @@ namespace AIRPG
             + $"\"temperature\": {temperature},"
             + $"\"repeat_penalty\": {repeatPenalty},"
             + $"\"n_predict\": {predictTokens},"
-            + $"\"cache_promt\": true,"
+            + $"\"cache_prompt\": true,"
             + $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
             + $"\"slot_id\": -1,"
             + $"\"stream\": true,"
@@ -49,6 +48,7 @@ namespace AIRPG
             + "}";
 
             var sw = Stopwatch.StartNew();
+            var firstByte = false;
 
             var response = await Instance.httpService.PostAsync(Instance.completionAddress, body, "application/json");
 
@@ -61,6 +61,11 @@ namespace AIRPG
 
             while ((bytesRead = await stream.ReadAsync(buf, 0, buf.Length)) > 0)
             {
+                if (firstByte == false)
+                {
+                    firstByte = true;
+                    GD.Print("Time until first byte: " + sw.Elapsed.TotalMilliseconds + " ms");
+                }
                 string chunk = Encoding.UTF8.GetString(buf, 0, bytesRead);
                 var chunkTrimmed = chunk.Trim().Substring(5);
                 if (chunkTrimmed.Length == 0) continue;
@@ -76,6 +81,7 @@ namespace AIRPG
                 }
                 tmpString += chunk;
             }
+            GD.Print("Total prompt time: " + sw.Elapsed.TotalMilliseconds + " ms");
         }
 
         public static Session StartSession(string aiCharacterName, string playerCharacterName, string basePrompt)

@@ -15,9 +15,17 @@ run/main_scene="res://default.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[audio]
+
+driver/enable_input=true
+
 [dotnet]
 
 project/assembly_name="Godot-ai-rpg"
+
+[editor_plugins]
+
+enabled=PackedStringArray()
 
 [network]
 

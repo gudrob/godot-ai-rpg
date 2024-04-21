@@ -112,6 +112,8 @@ public partial class SpeechRecognizer : Node
 			var recordedSample = _microphoneRecord.GetRecording();
 			if (recordedSample != null)
 			{
+				Game.Instance.isProcessing = true;
+				Game.Instance.processingBaseText = "Processing Speech";
 				VoskRecognizer recognizer = new(model, recordedSample.MixRate);
 				byte[] data = recordedSample.Stereo ? MixStereoToMono(recordedSample.Data) : recordedSample.Data;
 				if (!recognizer.AcceptWaveform(data, data.Length))
@@ -169,6 +171,9 @@ public partial class SpeechRecognizer : Node
 			_microphoneRecord.SetRecordingActive(false);
 			CallDeferred("emit_signal", "OnFinalResult", finalResult);
 		}
+
+		Game.Instance.processingBaseText = "Speech processed";
+		Game.Instance.isProcessing = false;
 		return finalResult;
 	}
 

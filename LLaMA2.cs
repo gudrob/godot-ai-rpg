@@ -22,6 +22,10 @@ namespace AIRPG
         private HttpService httpService;
         public static async Task Prompt(Session session, string prompt, int predictTokens = 192, float repeatPenalty = 1.5f, float temperature = 0.2f)
         {
+
+            Game.Instance.processingBaseText = "Preparing Prompt";
+            Game.Instance.isProcessing = true;
+
             var aiCharacterToken = $"{session.aiCharacterName}:";
             var playerCharacterToken = $"{session.playerCharacterName}:";
 
@@ -56,11 +60,15 @@ namespace AIRPG
             int bytesRead;
 
             var stream = await response.Content.ReadAsStreamAsync();
+            Game.Instance.processingBaseText = "Sending Prompt";
+            Game.Instance.isProcessing = true;
 
             string tmpString = "";
 
             while ((bytesRead = await stream.ReadAsync(buf, 0, buf.Length)) > 0)
             {
+                Game.Instance.processingBaseText = "Processing AI Response";
+                Game.Instance.isProcessing = true;
                 if (firstByte == false)
                 {
                     firstByte = true;
@@ -82,6 +90,8 @@ namespace AIRPG
                 tmpString += chunk;
             }
             GD.Print("Total prompt time: " + sw.Elapsed.TotalMilliseconds + " ms");
+            Game.Instance.processingBaseText = "AI Response finished";
+            Game.Instance.isProcessing = false;
         }
 
         public static Session StartSession(string aiCharacterName, string playerCharacterName, string basePrompt)

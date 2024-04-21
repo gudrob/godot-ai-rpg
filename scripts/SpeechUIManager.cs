@@ -37,9 +37,9 @@ public partial class SpeechUIManager : Node
         speechRecognizer.OnFinalResult += (result) =>
         {
             var res = ParseJsonAndSetResult(result, "text");
-            Game.instance.SetText(res);
+            Game.Instance.SetText(res);
             OnStopSpeechRecognition();
-            if (speechAutosend.ButtonPressed) Game.instance.ForceSend();
+            if (speechAutosend.ButtonPressed) Game.Instance.ForceSend();
 
         };
     }

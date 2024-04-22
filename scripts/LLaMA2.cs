@@ -130,7 +130,7 @@ namespace AIRPG
         {
             var architecture = RuntimeInformation.ProcessArchitecture;
 
-            string modelPath = "./../model/model.gguf";
+            string modelPath = "./../../model/model.gguf";
             string workingDirectory;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))

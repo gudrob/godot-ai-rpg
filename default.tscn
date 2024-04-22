@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=3 uid="uid://s86py3x3v5vd"]
 
-[ext_resource type="Script" path="res://LLaMA2.cs" id="1_xll0n"]
-[ext_resource type="Script" path="res://Game.cs" id="2_i67ii"]
+[ext_resource type="Script" path="res://scripts/LLaMA2.cs" id="1_xll0n"]
+[ext_resource type="Script" path="res://scripts/Game.cs" id="2_i67ii"]
 [ext_resource type="Script" path="res://scripts/SpeechUIManager.cs" id="3_kt4kr"]
 [ext_resource type="Script" path="res://scripts/SpeechRecognizer.cs" id="4_4afkc"]
 
@@ -71,18 +71,21 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_aj0wa")
 theme_override_styles/read_only = SubResource("StyleBoxEmpty_n0562")
 
 [node name="chat_panel" type="Panel" parent="game/chat"]
+layout_mode = 0
 offset_left = 568.0
 offset_top = 539.0
 offset_right = 1136.0
 offset_bottom = 639.0
 
 [node name="processing_panel" type="Panel" parent="game/chat"]
+layout_mode = 0
 offset_left = 19.0
 offset_top = 497.0
 offset_right = 1136.0
 offset_bottom = 532.0
 
 [node name="processing_text" type="Label" parent="game/chat/processing_panel"]
+layout_mode = 0
 offset_left = 1.0
 offset_top = 1.0
 offset_right = 1116.0

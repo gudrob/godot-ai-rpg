@@ -138,7 +138,7 @@ namespace AIRPG
                 if (architecture == Architecture.Arm64)
                 {
                     GD.Print("Detected MacOS on Arm64");
-                    workingDirectory = "./apple-silicon-llama/";
+                    workingDirectory = "./llama/macos-arm64/";
                 }
                 else
                 {
@@ -152,7 +152,7 @@ namespace AIRPG
                 if (architecture == Architecture.X64)
                 {
                     GD.Print("Detected Windows on X64");
-                    workingDirectory = "./win-x64-llama/";
+                    workingDirectory = "./llama/win-x64/";
                 }
                 else
                 {

@@ -24,3 +24,6 @@ model/*
 Godot-ai-rpg.csproj.old.*
 
 *csproj.old*
+
+tts/macos-arm64
+tts/win-x64

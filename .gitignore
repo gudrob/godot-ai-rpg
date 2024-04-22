@@ -25,5 +25,5 @@ Godot-ai-rpg.csproj.old.*
 
 *csproj.old*
 
-tts/macos-arm64
-tts/win-x64
+tts/macos-arm64/env/Lib/site-packages/
+tts/win-x64/env/Lib/site-packages/

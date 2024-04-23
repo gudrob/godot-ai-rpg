@@ -46,11 +46,15 @@ public partial class TextToSpeech : Node
         generationRunning = true;
 
         var filePath = $"output/{++generationCounter}_out.wav";
+        var filePathFull = Path.Join(backend, filePath);
+        var filePathFullOnlyFolder = Path.GetDirectoryName(filePathFull);
 
         try
         {
             speechProcessing = true;
             Log($"Generating speech with speaker {speaker} and text {text}");
+            if (!Directory.Exists(filePathFullOnlyFolder)) Directory.CreateDirectory(filePathFullOnlyFolder);
+
             await input.WriteLineAsync(speaker + ":" + filePath + ":" + text);
 
             while (speechProcessing)
@@ -68,15 +72,12 @@ public partial class TextToSpeech : Node
             generationRunning = false;
         }
 
-        filePath = Path.Join(backend, filePath);
         AudioStreamWav audioFile = null;
 
         try
         {
-            var data = await File.ReadAllBytesAsync(filePath);
-            audioFile = new AudioStreamWav();
-            audioFile.Data = data;
-            if (deleteAfterLoading) File.Delete(filePath);
+            audioFile = await RuntimeAudioLoader.LoadFile(filePathFull);
+            if (deleteAfterLoading) File.Delete(filePathFull);
         }
         catch (Exception exception)
         {
@@ -91,7 +92,6 @@ public partial class TextToSpeech : Node
         instance = this;
         tree = GetTree();
         StartServer();
-        _Generate(TextToSpeechSpeakers.Female, "Hello, how are you?", false);
     }
 
     private void SelectBackend(Architecture architecture)
@@ -139,7 +139,7 @@ public partial class TextToSpeech : Node
         ttsProcess.OutputDataReceived += processOutputDataReceived;
         ttsProcess.StartInfo.WorkingDirectory = backend;
         ttsProcess.StartInfo.Arguments = "main.py";
-        ttsProcess.StartInfo.FileName = backend+ttsPath;
+        ttsProcess.StartInfo.FileName = backend + ttsPath;
 
         if (backend == WINDOWS_X64_BACKEND)
         {

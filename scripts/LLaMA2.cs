@@ -21,6 +21,9 @@ namespace AIRPG
 
         private HttpService httpService;
 
+        [Export]
+        public AudioStreamPlayer speechPlayer;
+
         const string UNSUPPORTED_BACKEND = "none";
 
         public static async Task Generate(Session session, string text, int predictTokens = 160, float repeatPenalty = 1.18f, float temperature = 0.7f)
@@ -62,7 +65,7 @@ namespace AIRPG
             + $"\"stream\": true,"
             + $"\"temperature\": {temperature},"
             + $"\"tfs_z\": 1,"
-            + $"\"top_k\": 20,"
+            + $"\"top_k\": 5,"
             + $"\"top_p\": 0.5,"
             + $"\"typical_p\": 1"
             + "}";
@@ -104,7 +107,10 @@ namespace AIRPG
                         Log("Data received: " + chunkToProcess);
                         var responseDict = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(chunkTrimmed);
                         var res = responseDict["content"].ToString();
-                        if (res.Length > 0) session.fullPrompt.Append(res);
+                        if (res.Length == 0) continue;
+
+                        Instance.TrackLineForTTS(session, res);
+                        session.fullPrompt.Append(res);
                     }
                     catch (Exception ex)
                     {
@@ -126,6 +132,30 @@ namespace AIRPG
                 playerCharacterName = playerCharacterName,
                 fullPrompt = new(basePrompt)
             };
+        }
+
+        private static char[] sentenceTerminationTokens = new char[] { '!', '?', ':', '.' };
+
+        private async void TrackLineForTTS(Session session, string chunk)
+        {
+            session.lastSentence.Append(chunk);
+
+            if (chunk.IndexOfAny(sentenceTerminationTokens) != -1)
+            {
+                if (session.lastSentence.Length > 2 && speechPlayer != null)
+                {
+                    var output = await TextToSpeech.Generate(TextToSpeechSpeakers.Male, session.lastSentence.ToString());
+
+                    while (speechPlayer.Playing)
+                    {
+                        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                    }
+
+                    speechPlayer.Stream = output;
+                    speechPlayer.Play();
+                }
+                session.lastSentence.Clear();
+            }
         }
 
         public override void _Ready()
@@ -245,6 +275,7 @@ namespace AIRPG
         public StringBuilder fullPrompt;
         public string aiCharacterName;
         public string playerCharacterName;
+        public StringBuilder lastSentence = new();
     }
 
 }

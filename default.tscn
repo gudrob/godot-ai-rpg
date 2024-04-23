@@ -16,8 +16,9 @@
 
 [node name="root" type="Node3D"]
 
-[node name="llama" type="Node" parent="."]
+[node name="llama" type="Node" parent="." node_paths=PackedStringArray("speechPlayer")]
 script = ExtResource("1_xll0n")
+speechPlayer = NodePath("../game/speech/speech_player")
 
 [node name="debug" type="Control" parent="."]
 visible = false
@@ -148,6 +149,17 @@ offset_right = 825.0
 offset_bottom = 574.0
 button_pressed = true
 text = " Autosend recognized speech"
+
+[node name="speech_autostop" type="CheckBox" parent="game/speech"]
+layout_mode = 0
+offset_left = 843.0
+offset_top = 543.0
+offset_right = 1096.0
+offset_bottom = 574.0
+button_pressed = true
+text = "Automatically stop after silence"
+
+[node name="speech_player" type="AudioStreamPlayer" parent="game/speech"]
 
 [node name="text_to_speech" type="Control" parent="game"]
 anchors_preset = 0

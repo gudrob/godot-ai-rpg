@@ -21,9 +21,14 @@ model/*
 
 .vs/Godot-ai-rpg/
 
-Godot-ai-rpg.csproj.old.*
+Godot-ai-rpg.csproj.ol*
+
+*DS_Store*
 
 *csproj.old*
 
-tts/macos-arm64/env/Lib/site-packages/
 tts/win-x64/env/Lib/site-packages/
+tts/macos-arm64/env/lib/python3.10/site-packages/
+tts/macos-arm64/env/share/vim
+tts/macos-arm64/env/share/man
+tts/macos-arm64/env/share/doc

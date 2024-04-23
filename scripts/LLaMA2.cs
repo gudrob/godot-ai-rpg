@@ -23,7 +23,7 @@ namespace AIRPG
 
         const string UNSUPPORTED_BACKEND = "none";
 
-        public static async Task Generate(Session session, string text, int predictTokens = 192, float repeatPenalty = 1.5f, float temperature = 0.2f)
+        public static async Task Generate(Session session, string text, int predictTokens = 400, float repeatPenalty = 1.18f, float temperature = 0.7f)
         {
             Game.Instance.processingBaseText = "Preparing Prompt";
             Game.Instance.isProcessing = true;
@@ -31,27 +31,43 @@ namespace AIRPG
             var aiCharacterToken = $"{session.aiCharacterName}:";
             var playerCharacterToken = $"{session.playerCharacterName}:";
 
+            if (!session.fullPrompt.ToString().EndsWith("\n")) session.fullPrompt.Append("\n");
+
             session.fullPrompt
-                .Append(System.Environment.NewLine)
                 .Append(playerCharacterToken)
                 .Append(' ');
 
             session.fullPrompt
                 .Append(text)
                 .Append(System.Environment.NewLine)
-                .Append(aiCharacterToken)
-                .Append(' ');
+                .Append(aiCharacterToken);
 
             var body = "{"
-            + $"\"temperature\": {temperature},"
-            + $"\"repeat_penalty\": {repeatPenalty},"
-            + $"\"n_predict\": {predictTokens},"
             + $"\"cache_prompt\": true,"
+            + $"\"frequency_penalty\": 0,"
+            + $"\"grammar\": \"\","
+            + $"\"image_data\": [],"
+            + $"\"min_p\": 0.05,"
+            + $"\"mirostat\": 0,"
+            + $"\"mirostat_eta\": 0.1,"
+            + $"\"mirostat_tau\": 5,"
+            + $"\"n_predict\": {predictTokens},"
+            + $"\"n_probs\": 0,"
+            + $"\"presence_penalty\": 0,"
             + $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
+            + $"\"repeat_last_n\": 256,"
+            + $"\"repeat_penalty\": {repeatPenalty},"
             + $"\"slot_id\": -1,"
+            + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"],"
             + $"\"stream\": true,"
-            + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"]"
+            + $"\"temperature\": {temperature},"
+            + $"\"tfs_z\": 1,"
+            + $"\"top_k\": 40,"
+            + $"\"top_p\": 0.5,"
+            + $"\"typical_p\": 1"
             + "}";
+
+            GD.Print(body);
 
             var sw = Stopwatch.StartNew();
             var firstByte = false;
@@ -78,18 +94,24 @@ namespace AIRPG
                 }
                 string chunk = Encoding.UTF8.GetString(buf, 0, bytesRead);
                 var chunkTrimmed = chunk.Trim()[5..];
-                if (chunkTrimmed.Length == 0) continue;
-                try
+
+                var chunks = chunkTrimmed.Split("data: ");
+
+                foreach (var chunkToProcess in chunks)
                 {
-                    var responseDict = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(chunkTrimmed);
-                    var res = responseDict["content"].ToString();
-                    if (res.Length > 0) session.fullPrompt.Append(res);
+                    try
+                    {
+                        Log("Data received: " + chunkToProcess);
+                        var responseDict = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(chunkTrimmed);
+                        var res = responseDict["content"].ToString();
+                        if (res.Length > 0) session.fullPrompt.Append(res);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log("Exception while parsing AI response: " + ex.ToString());
+                    }
+                    tmpString += chunk;
                 }
-                catch (Exception ex)
-                {
-                    Log("Exception while parsing AI response: " + ex.ToString());
-                }
-                tmpString += chunk;
             }
             Log("Total prompt time: " + sw.Elapsed.TotalMilliseconds + " ms");
             Game.Instance.processingBaseText = "AI Response finished";
@@ -199,6 +221,7 @@ namespace AIRPG
 
             return true;
         }
+
         static void Log(string info)
         {
             GD.Print(LogPrefix() + info);
@@ -209,7 +232,13 @@ namespace AIRPG
             var time = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
             return $"[LLAMA][{time:hh\\:mm\\:ss\\:fff}] ";
         }
+
+        public override void _ExitTree()
+        {
+            LLaMAProcess?.Kill();
+        }
     }
+
 
     public class Session
     {

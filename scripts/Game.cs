@@ -15,6 +15,8 @@ public partial class Game : Node
 
     private bool forceSend = false;
 
+    private bool enterPressed = false;
+
     public static Game Instance { private set; get; }
 
     public bool isProcessing = false;
@@ -47,7 +49,20 @@ public partial class Game : Node
 
     public async override void _Process(double delta)
     {
-        var send = Input.IsKeyPressed(Key.Enter);
+        bool send = false;
+
+        if (!enterPressed)
+        {
+            if (Input.IsKeyPressed(Key.Enter))
+            {
+                send = true;
+                enterPressed = true;
+            }
+        }
+        else if (!Input.IsKeyPressed(Key.Enter))
+        {
+            enterPressed = false;
+        }
 
         processing += delta;
 
@@ -82,7 +97,7 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= LLaMA2.StartSession("Llama", "User", "A transcript of a dialog between a User and a digital assistant named Llama. Llama answers short and precise. Llama uses only letters and numbers.");
+                session ??= LLaMA2.StartSession("Llama", "User", "This is a conversation between User and Llama, a friendly chatbot. Llama is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.");
 
                 var input = chatInput.Text + " ";
 

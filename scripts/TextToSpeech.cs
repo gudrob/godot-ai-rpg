@@ -29,6 +29,8 @@ public partial class TextToSpeech : Node
 
     const string WINDOWS_X64_BACKEND = "./tts/win-x64/";
 
+    const string MACOS_ARM64_BACKEND = "./tts/macos-arm64/";
+
     public static async Task<AudioStreamWav> Generate(string speaker, string text, bool deleteAfterLoading = true)
     {
         return await instance._Generate(speaker, text);
@@ -99,7 +101,7 @@ public partial class TextToSpeech : Node
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && architecture == Architecture.Arm64)
         {
             Log("Detected MacOS on Arm64");
-            backend = "./tts/macos-arm64/";
+            backend = MACOS_ARM64_BACKEND;
             ttsPath = "env/bin/python";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && architecture == Architecture.X64)
@@ -135,10 +137,12 @@ public partial class TextToSpeech : Node
         ttsProcess.Exited += processExited;
         ttsProcess.ErrorDataReceived += processErrorDataReceived;
         ttsProcess.OutputDataReceived += processOutputDataReceived;
+        ttsProcess.StartInfo.WorkingDirectory = backend;
+        ttsProcess.StartInfo.Arguments = "main.py";
+        ttsProcess.StartInfo.FileName = backend+ttsPath;
 
         if (backend == WINDOWS_X64_BACKEND)
         {
-            ttsProcess.StartInfo.WorkingDirectory = backend;
             ttsProcess.StartInfo.FileName = "cmd.exe";
         }
 

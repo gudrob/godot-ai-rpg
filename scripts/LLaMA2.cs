@@ -23,7 +23,7 @@ namespace AIRPG
 
         const string UNSUPPORTED_BACKEND = "none";
 
-        public static async Task Generate(Session session, string text, int predictTokens = 192, float repeatPenalty = 1.18f, float temperature = 0.7f)
+        public static async Task Generate(Session session, string text, int predictTokens = 160, float repeatPenalty = 1.18f, float temperature = 0.7f)
         {
             Game.Instance.processingBaseText = "Preparing Prompt";
             Game.Instance.isProcessing = true;
@@ -62,7 +62,7 @@ namespace AIRPG
             + $"\"stream\": true,"
             + $"\"temperature\": {temperature},"
             + $"\"tfs_z\": 1,"
-            + $"\"top_k\": 40,"
+            + $"\"top_k\": 20,"
             + $"\"top_p\": 0.5,"
             + $"\"typical_p\": 1"
             + "}";

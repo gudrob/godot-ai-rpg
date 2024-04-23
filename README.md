@@ -15,15 +15,14 @@ For GPU acelleration LLaMA.cpp was compiled with OpenCL BLAS for win-x64 and Met
 CUDA and Vulkan might also be added at a later time.
 
 ### Roadmap
-#### [x] Add
-#### [x] Make LLaMA interaction async and allow partial responses, see [#1]
-#### [x] Add STT library for both base platforms
-#### [ ] Add TTS library for both base platforms
-#### [ ] Implement full conversation STT -> AI -> TTS
-#### [ ] Refactor code
-#### [ ] Make the AI roleplay properly
-#### [ ] Add humanoid example NPC
-#### [ ] Add dungeon master AI
+- [x] Make LLaMA interaction async and allow partial responses, see [#1]
+- [x] Add STT library for both base platforms
+- [ ] Add TTS library for both base platforms
+- [ ] Implement full conversation STT -> AI -> TTS
+- [ ] Refactor code
+- [ ] Make the AI roleplay properly
+- [ ] Add humanoid example NPC
+- [ ] Add dungeon master AI
 
 ### LLaMA Models
 https://huggingface.co/TheBloke/WizardLM-7B-uncensored-GGUF

@@ -61,16 +61,6 @@ custom_minimum_size = Vector2(1130, 475.38)
 layout_mode = 2
 autowrap_mode = 3
 
-[node name="chat_input" type="LineEdit" parent="game/chat"]
-layout_mode = 2
-offset_left = 568.0
-offset_top = 574.0
-offset_right = 1136.0
-offset_bottom = 637.0
-theme_override_styles/normal = SubResource("StyleBoxEmpty_juw8d")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_aj0wa")
-theme_override_styles/read_only = SubResource("StyleBoxEmpty_n0562")
-
 [node name="chat_panel" type="Panel" parent="game/chat"]
 layout_mode = 0
 offset_left = 568.0
@@ -95,6 +85,16 @@ text = "Processing Speech ..."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
+
+[node name="chat_input" type="LineEdit" parent="game/chat"]
+layout_mode = 2
+offset_left = 575.0
+offset_top = 574.0
+offset_right = 1129.0
+offset_bottom = 633.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_juw8d")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_aj0wa")
+theme_override_styles/read_only = SubResource("StyleBoxEmpty_n0562")
 
 [node name="speech" type="Control" parent="game" node_paths=PackedStringArray("speechStartButton", "speechResult", "speechRecognizer", "speechAutosend")]
 layout_mode = 1

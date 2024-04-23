@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -32,7 +33,7 @@ public partial class SpeechRecognizer : Node
 	private ulong recordTimeStart;
 	private ulong noChangeTimeOutStart;
 	private CancellationTokenSource cancelToken;
-	private int processIntervalMs = 250;
+	private int processIntervalMs = 50;
 
 	public override void _Ready()
 	{
@@ -90,6 +91,7 @@ public partial class SpeechRecognizer : Node
 			while (!cancelToken.IsCancellationRequested)
 			{
 				await Task.Delay(processIntervalMs, cancelToken.Token);
+				var sw = Stopwatch.StartNew();
 				ProcessMicrophone();
 				ulong currentTime = Time.GetTicksMsec();
 				if (!continuousRecognition && isListening && (currentTime - noChangeTimeOutStart) > (ulong)noChangeTimeoutInMS)
@@ -101,6 +103,7 @@ public partial class SpeechRecognizer : Node
 					DebugPrint("Stopping from Timeout");
 					StopSpeechRecoginition();
 				}
+				Log($"Processing time for partial result: {sw.Elapsed.TotalMilliseconds} ms");
 			}
 		});
 	}
@@ -217,5 +220,16 @@ public partial class SpeechRecognizer : Node
 	public bool isCurrentlyListening()
 	{
 		return isListening;
-	}
+    }
+
+    static void Log(string info)
+    {
+        GD.Print(LogPrefix() + info);
+    }
+
+    static string LogPrefix()
+    {
+        var time = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
+        return $"[SPEECH RECOGNITION][{time:hh\\:mm\\:ss\\:fff}] ";
+    }
 }

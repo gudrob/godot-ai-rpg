@@ -23,7 +23,7 @@ namespace AIRPG
 
         const string UNSUPPORTED_BACKEND = "none";
 
-        public static async Task Generate(Session session, string text, int predictTokens = 400, float repeatPenalty = 1.18f, float temperature = 0.7f)
+        public static async Task Generate(Session session, string text, int predictTokens = 192, float repeatPenalty = 1.18f, float temperature = 0.7f)
         {
             Game.Instance.processingBaseText = "Preparing Prompt";
             Game.Instance.isProcessing = true;
@@ -58,7 +58,7 @@ namespace AIRPG
             + $"\"repeat_last_n\": 256,"
             + $"\"repeat_penalty\": {repeatPenalty},"
             + $"\"slot_id\": -1,"
-            + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"],"
+            + $"\"stop\": [\"</s>\", \"<|eot_id|>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"],"
             + $"\"stream\": true,"
             + $"\"temperature\": {temperature},"
             + $"\"tfs_z\": 1,"
@@ -93,7 +93,7 @@ namespace AIRPG
                     Log("Time until first byte: " + sw.Elapsed.TotalMilliseconds + " ms");
                 }
                 string chunk = Encoding.UTF8.GetString(buf, 0, bytesRead);
-                var chunkTrimmed = chunk.Trim()[5..];
+                var chunkTrimmed = chunk.Trim()[5..].Replace("<|eot_id|>", ""); //LLaMA 3 token when it feels like it
 
                 var chunks = chunkTrimmed.Split("data: ");
 

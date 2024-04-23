@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using System.IO;
 
 public partial class TextToSpeech : Node
@@ -14,37 +15,41 @@ public partial class TextToSpeech : Node
 
     private bool generationRunning = false;
 
-    private bool speechProcessing = false;
+    private bool speechProcessing = true;
 
     private StreamWriter input;
 
     private SceneTree tree;
 
-    private string workingDirectory;
+    private string backend;
 
     private string ttsPath;
 
-    public static async Task<AudioStreamWav> Generate(string speaker, string text)
+    const string UNSUPPORTED_BACKEND = "none";
+
+    const string WINDOWS_X64_BACKEND = "./tts/win-x64/";
+
+    public static async Task<AudioStreamWav> Generate(string speaker, string text, bool deleteAfterLoading = true)
     {
         return await instance._Generate(speaker, text);
     }
 
-    private async Task<AudioStreamWav> _Generate(string speaker, string text)
+    private async Task<AudioStreamWav> _Generate(string speaker, string text, bool deleteAfterLoading = true)
     {
-        while (generationRunning)
+        while (generationRunning || speechProcessing)
         {
             await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
         }
 
         generationRunning = true;
-        var generationId = ++generationCounter;
-        var filePath = generationId+"_out.wav";
+
+        var filePath = $"output/{++generationCounter}_out.wav";
 
         try
         {
             speechProcessing = true;
-
-            await input.WriteAsync(filePath+":"+speaker+":"+text);
+            Log($"Generating speech with speaker {speaker} and text {text}");
+            await input.WriteLineAsync(speaker + ":" + filePath + ":" + text);
 
             while (speechProcessing)
             {
@@ -54,26 +59,26 @@ public partial class TextToSpeech : Node
         }
         catch (Exception exception)
         {
-            GD.Print("EXCEPTION WHILE GENERATING TTS: " + "\n" + exception);
+            Log("Exception while generating speech: \n" + exception);
         }
         finally
         {
             generationRunning = false;
         }
 
-        filePath = Path.Join(workingDirectory, filePath);
-
+        filePath = Path.Join(backend, filePath);
         AudioStreamWav audioFile = null;
 
         try
         {
-            audioFile = ResourceLoader.Load<AudioStreamWav>(filePath);
-
-            File.Delete(filePath);
+            var data = await File.ReadAllBytesAsync(filePath);
+            audioFile = new AudioStreamWav();
+            audioFile.Data = data;
+            if (deleteAfterLoading) File.Delete(filePath);
         }
         catch (Exception exception)
         {
-            GD.Print("EXCEPTION WHILE LOADING AUDIO FILE: " + "\n" + exception);
+            Log("Exception while loading audio file: \n" + exception);
         }
 
         return audioFile;
@@ -83,11 +88,41 @@ public partial class TextToSpeech : Node
     {
         instance = this;
         tree = GetTree();
+        StartServer();
+        _Generate(TextToSpeechSpeakers.Female, "Hello, how are you?", false);
     }
 
-    private bool StartServer(string workingDirectory, string ttsPath)
+    private void SelectBackend(Architecture architecture)
     {
-        GD.Print($"[TTS] Starting. Working directory: {workingDirectory}, tts path: {ttsPath}");
+        backend = UNSUPPORTED_BACKEND;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && architecture == Architecture.Arm64)
+        {
+            Log("Detected MacOS on Arm64");
+            backend = "./tts/macos-arm64/";
+            ttsPath = "env/bin/python";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && architecture == Architecture.X64)
+        {
+            Log("Detected Windows on X64");
+            backend = WINDOWS_X64_BACKEND;
+            ttsPath = "env/Scripts/python.exe";
+        }
+    }
+
+    private bool StartServer()
+    {
+        var architecture = RuntimeInformation.ProcessArchitecture;
+
+        SelectBackend(architecture);
+
+        if (backend == UNSUPPORTED_BACKEND)
+        {
+            Log($"Architecture {architecture} on this platform is currently unsupported");
+            GetTree().Quit();
+        }
+
+        Log($"Starting. Working directory: {backend}, tts path: {ttsPath}");
 
         ttsProcess = new();
         ttsProcess.StartInfo.ErrorDialog = false;
@@ -97,45 +132,65 @@ public partial class TextToSpeech : Node
         ttsProcess.StartInfo.RedirectStandardError = true;
         ttsProcess.StartInfo.RedirectStandardInput = true;
         ttsProcess.StartInfo.RedirectStandardOutput = true;
-        ttsProcess.StartInfo.WorkingDirectory = workingDirectory;
-        ttsProcess.StartInfo.FileName = ttsPath;
-        ttsProcess.StartInfo.Arguments = "";
         ttsProcess.Exited += processExited;
         ttsProcess.ErrorDataReceived += processErrorDataReceived;
         ttsProcess.OutputDataReceived += processOutputDataReceived;
-        input = ttsProcess.StandardInput;
 
-        if (!ttsProcess.Start())
+        if (backend == WINDOWS_X64_BACKEND)
         {
-            GD.Print("Could not start the TTS process.");
-            return false;
+            ttsProcess.StartInfo.WorkingDirectory = backend;
+            ttsProcess.StartInfo.FileName = "cmd.exe";
         }
 
+        ttsProcess.Start();
+        input = ttsProcess.StandardInput;
         ttsProcess.BeginErrorReadLine();
         ttsProcess.BeginOutputReadLine();
 
+        if (backend == WINDOWS_X64_BACKEND)
+        {
+            ttsProcess.StandardInput.WriteLine(".\\env\\Scripts\\Activate");
+            ttsProcess.StandardInput.WriteLine(".\\env\\Scripts\\python.exe main.py");
+            ttsProcess.StandardInput.Flush();
+        }
+
         void processExited(object sender, EventArgs e)
         {
-            GD.Print("[TTS] Exited with code "+ttsProcess.ExitCode);
-
-            StartServer(workingDirectory, ttsPath);
+            Log("Exited with code " + ttsProcess.ExitCode);
+            StartServer();
         }
 
         void processErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            GD.Print(e.Data);
+            Log(e.Data);
         }
 
         void processOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            var data = e.Data ?? "";
+            var data = (e.Data ?? "").Trim();
 
-            if (data.Contains("-GENERATION FINISHED-"))
+            if (data.Contains("-READY-"))
             {
+                Log("Ready to generate");
                 speechProcessing = false;
+            }
+            else if (data.Length > 0)
+            {
+                Log(data);
             }
         }
 
         return true;
+    }
+
+    static void Log(string info)
+    {
+        GD.Print(LogPrefix() + info);
+    }
+
+    static string LogPrefix()
+    {
+        var time = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
+        return $"[TTS][{time:hh\\:mm\\:ss\\:fff}] ";
     }
 }

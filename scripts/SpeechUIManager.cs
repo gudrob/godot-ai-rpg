@@ -31,20 +31,20 @@ public partial class SpeechUIManager : Node
 
         speechRecognizer.OnPartialResult += (result) =>
         {
-            ParseJsonAndSetResult(result, "partial");
+            Parse(result, "partial");
         };
 
         speechRecognizer.OnFinalResult += (result) =>
         {
-            var res = ParseJsonAndSetResult(result, "text");
-            Game.Instance.SetText(res);
+            var text = Parse(result, "text");
+            Game.Instance.SetText(text);
             OnStopSpeechRecognition();
             if (speechAutosend.ButtonPressed) Game.Instance.ForceSend();
 
         };
     }
 
-    public string ParseJsonAndSetResult(string json, string key)
+    public string Parse(string json, string key)
     {
         var text = speechResult.Text;
         try
@@ -61,16 +61,11 @@ public partial class SpeechUIManager : Node
         return text;
     }
 
-    public override void _Process(double delta)
-    {
-    }
-
     private void OnStopSpeechRecognition()
     {
         speechStartButton.Text = "Start Recognition";
         speechStartButton.Modulate = new Color(1, 1, 1, 1f);
     }
-
 
     private void OnStartSpeechRecognition()
     {

@@ -86,7 +86,7 @@ public partial class Game : Node
 
                 var input = chatInput.Text + " ";
 
-                var promptTask = LLaMA2.Prompt(session, input);
+                var promptTask = LLaMA2.Generate(session, input);
 
                 while (!promptTask.IsCompleted)
                 {

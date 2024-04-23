@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://s86py3x3v5vd"]
+[gd_scene load_steps=10 format=3 uid="uid://s86py3x3v5vd"]
 
 [ext_resource type="Script" path="res://scripts/LLaMA2.cs" id="1_xll0n"]
 [ext_resource type="Script" path="res://scripts/Game.cs" id="2_i67ii"]
 [ext_resource type="Script" path="res://scripts/SpeechUIManager.cs" id="3_kt4kr"]
 [ext_resource type="Script" path="res://scripts/SpeechRecognizer.cs" id="4_4afkc"]
+[ext_resource type="Script" path="res://scripts/TextToSpeech.cs" id="5_fp2kh"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_juw8d"]
 
@@ -147,3 +148,9 @@ offset_right = 825.0
 offset_bottom = 574.0
 button_pressed = true
 text = " Autosend recognized speech"
+
+[node name="text_to_speech" type="Control" parent="game"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("5_fp2kh")

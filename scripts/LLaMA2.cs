@@ -20,9 +20,11 @@ namespace AIRPG
         private string completionAddress;
 
         private HttpService httpService;
-        public static async Task Prompt(Session session, string prompt, int predictTokens = 192, float repeatPenalty = 1.5f, float temperature = 0.2f)
-        {
 
+        const string UNSUPPORTED_BACKEND = "none";
+
+        public static async Task Generate(Session session, string text, int predictTokens = 192, float repeatPenalty = 1.5f, float temperature = 0.2f)
+        {
             Game.Instance.processingBaseText = "Preparing Prompt";
             Game.Instance.isProcessing = true;
 
@@ -35,7 +37,7 @@ namespace AIRPG
                 .Append(' ');
 
             session.fullPrompt
-                .Append(prompt)
+                .Append(text)
                 .Append(System.Environment.NewLine)
                 .Append(aiCharacterToken)
                 .Append(' ');
@@ -72,7 +74,7 @@ namespace AIRPG
                 if (firstByte == false)
                 {
                     firstByte = true;
-                    GD.Print("Time until first byte: " + sw.Elapsed.TotalMilliseconds + " ms");
+                    Log("Time until first byte: " + sw.Elapsed.TotalMilliseconds + " ms");
                 }
                 string chunk = Encoding.UTF8.GetString(buf, 0, bytesRead);
                 var chunkTrimmed = chunk.Trim()[5..];
@@ -85,11 +87,11 @@ namespace AIRPG
                 }
                 catch (Exception ex)
                 {
-                    GD.Print(ex);
+                    Log("Exception while parsing AI response: " + ex.ToString());
                 }
                 tmpString += chunk;
             }
-            GD.Print("Total prompt time: " + sw.Elapsed.TotalMilliseconds + " ms");
+            Log("Total prompt time: " + sw.Elapsed.TotalMilliseconds + " ms");
             Game.Instance.processingBaseText = "AI Response finished";
             Game.Instance.isProcessing = false;
         }
@@ -102,7 +104,6 @@ namespace AIRPG
                 playerCharacterName = playerCharacterName,
                 fullPrompt = new(basePrompt)
             };
-
         }
 
         public override void _Ready()
@@ -121,72 +122,42 @@ namespace AIRPG
             }
         }
 
-        public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 3, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMap = true, bool alwaysKeepInMemory = true)
+        public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 3, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = true)
         {
-            Instance.InitializeServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMap, alwaysKeepInMemory);
+            Instance.StartServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory);
         }
 
-        private void InitializeServer(int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory)
+        private static string SelectBackend(Architecture architecture)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && architecture == Architecture.Arm64)
+            {
+                Log("Detected MacOS on Arm64");
+                return "./llama/macos-arm64/";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && architecture == Architecture.X64)
+            {
+                Log("Detected Windows on X64");
+                return "./llama/win-x64/";
+            }
+
+            return UNSUPPORTED_BACKEND;
+        }
+
+        private bool StartServer(int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory)
+        {
+            completionAddress = $"http://{host}:{port}/completion";
+
             var architecture = RuntimeInformation.ProcessArchitecture;
 
             string modelPath = "./../../model/model.gguf";
-            string workingDirectory;
+            string backend = SelectBackend(architecture);
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (backend == UNSUPPORTED_BACKEND)
             {
-                if (architecture == Architecture.Arm64)
-                {
-                    GD.Print("Detected MacOS on Arm64");
-                    workingDirectory = "./llama/macos-arm64/";
-                }
-                else
-                {
-                    GD.Print("MacOS on " + architecture.ToString() + " is currently unsupported");
-                    GetTree().Quit();
-                    return;
-                }
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                if (architecture == Architecture.X64)
-                {
-                    GD.Print("Detected Windows on X64");
-                    workingDirectory = "./llama/win-x64/";
-                }
-                else
-                {
-                    GD.Print("Windows on " + architecture.ToString() + " is currently unsupported");
-                    GetTree().Quit();
-                    return;
-                }
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                GD.Print("Linux is currently unsupported");
+                Log($"Architecture {architecture} on this platform is currently unsupported");
                 GetTree().Quit();
-                return;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
-            {
-                GD.Print("FreeBSD is currently unsupported");
-                GetTree().Quit();
-                return;
-            }
-            else
-            {
-                GD.Print("Your Operating System is unsupported");
-                GetTree().Quit();
-                return;
             }
 
-            StartServer(modelPath, workingDirectory, gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory);
-
-            completionAddress = $"http://{host}:{port}/completion";
-        }
-
-        private bool StartServer(string modelPath, string workingDirectory, int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory)
-        {
             LLaMAProcess = new();
             LLaMAProcess.StartInfo.ErrorDialog = false;
             LLaMAProcess.StartInfo.UseShellExecute = false;
@@ -195,8 +166,8 @@ namespace AIRPG
             LLaMAProcess.StartInfo.RedirectStandardError = true;
             LLaMAProcess.StartInfo.RedirectStandardInput = true;
             LLaMAProcess.StartInfo.RedirectStandardOutput = true;
-            LLaMAProcess.StartInfo.WorkingDirectory = workingDirectory;
-            LLaMAProcess.StartInfo.FileName = workingDirectory + "server";
+            LLaMAProcess.StartInfo.WorkingDirectory = backend;
+            LLaMAProcess.StartInfo.FileName = backend + "server";
             LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --log-format text --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "" : "--no-mmap")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
             LLaMAProcess.Exited += processExited;
             LLaMAProcess.ErrorDataReceived += processErrorDataReceived;
@@ -204,7 +175,7 @@ namespace AIRPG
 
             if (!LLaMAProcess.Start())
             {
-                GD.Print("Could not start the AI process.");
+                Log("Could not start the AI process.");
                 return false;
             }
 
@@ -213,12 +184,12 @@ namespace AIRPG
 
             void processExited(object sender, EventArgs e)
             {
-                GD.PrintRaw(LLaMAProcess.ExitCode + System.Environment.NewLine);
+                Log("Exited with code " + LLaMAProcess.ExitCode);
             }
 
             void processErrorDataReceived(object sender, DataReceivedEventArgs e)
             {
-                GD.Print(e.Data);
+                Log(e.Data);
             }
 
             void processOutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -227,6 +198,16 @@ namespace AIRPG
             }
 
             return true;
+        }
+        static void Log(string info)
+        {
+            GD.Print(LogPrefix() + info);
+        }
+
+        static string LogPrefix()
+        {
+            var time = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
+            return $"[LLAMA][{time:hh\\:mm\\:ss\\:fff}] ";
         }
     }
 

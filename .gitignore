@@ -29,6 +29,9 @@ Godot-ai-rpg.csproj.ol*
 
 tts/win-x64/env/Lib/site-packages/
 tts/macos-arm64/env/lib/python3.10/site-packages/
+tts/macos-arm64/env/Library/
+!tts/macos-arm64/env/lib/python3.10/site-packages/pip/
+!tts/macos-arm64/env/lib/python3.10/site-packages/pip/pip-24.0.dist-info
 tts/macos-arm64/env/share/vim
 tts/macos-arm64/env/share/man
 tts/macos-arm64/env/share/doc

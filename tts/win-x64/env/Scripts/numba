@@ -1,8 +1,0 @@
-#!C:\Users\Robster 420\Documents\Godot4\Projects\godot-ai-rpg\tts\win-x64\env\Scripts\python.exe
-# -*- coding: UTF-8 -*-
-from __future__ import print_function, division, absolute_import
-
-from numba.misc.numba_entry import main
-
-if __name__ == "__main__":
-    main()

@@ -1,0 +1,200 @@
+[gd_scene load_steps=32 format=3 uid="uid://b5p7aa8uvbsm0"]
+
+[ext_resource type="PackedScene" uid="uid://ctuh46lyx6xtk" path="res://assets/misc/skeleton.tscn" id="1_1lmst"]
+[ext_resource type="ArrayMesh" path="res://assets/models/body/body.mesh" id="1_te8be"]
+[ext_resource type="Texture2D" uid="uid://du8xcxk17e6gg" path="res://assets/textures/body/female_young.png" id="2_k137s"]
+[ext_resource type="ArrayMesh" path="res://assets/models/body/eyes.mesh" id="2_s2pal"]
+[ext_resource type="Texture2D" uid="uid://b5vlqqep0l5j2" path="res://assets/textures/body/skin_normal.png" id="3_3i1im"]
+[ext_resource type="Skin" path="res://assets/misc/skin_data.tres" id="3_8xfsi"]
+[ext_resource type="ArrayMesh" path="res://assets/models/body/hair.mesh" id="3_dv2sp"]
+[ext_resource type="ArrayMesh" path="res://assets/models/body/eyelashes.mesh" id="4_y14l8"]
+[ext_resource type="ArrayMesh" path="res://assets/models/clothes/jeans_01.mesh" id="5_fjdfk"]
+[ext_resource type="Texture2D" uid="uid://bv1rmpjf8jwo1" path="res://assets/textures/body/eyes_albedo.png" id="5_fynft"]
+[ext_resource type="ArrayMesh" path="res://assets/models/clothes/shirt_01.mesh" id="6_t4kci"]
+[ext_resource type="Texture2D" uid="uid://dk3ughifvh7p" path="res://assets/textures/body/eyelashes_albedo.png" id="7_woknq"]
+[ext_resource type="ArrayMesh" path="res://assets/models/body/teeth.mesh" id="7_yx7er"]
+[ext_resource type="ArrayMesh" uid="uid://tb74icjddfdr" path="res://assets/models/body/eyes_reflection.mesh" id="8_27dub"]
+[ext_resource type="Texture2D" uid="uid://gfeup42e6n8k" path="res://assets/textures/body/hair_albedo.png" id="8_c315m"]
+[ext_resource type="Texture2D" uid="uid://d2oai67f3ke4o" path="res://assets/textures/clothes/jeans_01_albedo.png" id="11_ufd5o"]
+[ext_resource type="Texture2D" uid="uid://cp5y8wjp31d4n" path="res://assets/textures/body/teeth_albedo.png" id="12_dvy4s"]
+[ext_resource type="Texture2D" uid="uid://dxcwwou71fru5" path="res://assets/textures/body/eyes_relection.png" id="12_inb8t"]
+[ext_resource type="Texture2D" uid="uid://b33tccciuonuy" path="res://assets/textures/clothes/jeans_01_ao.png" id="12_lkaml"]
+[ext_resource type="Texture2D" uid="uid://bmojkja1ncyeb" path="res://assets/textures/clothes/jeans_01_normals.png" id="13_0qldu"]
+[ext_resource type="Texture2D" uid="uid://dq4wccgyel0u4" path="res://assets/textures/body/tongue_albedo.png" id="13_l714q"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a0y8d"]
+albedo_texture = ExtResource("2_k137s")
+metallic = 0.08
+metallic_specular = 0.38
+roughness = 0.48
+normal_enabled = true
+normal_scale = 0.67
+normal_texture = ExtResource("3_3i1im")
+anisotropy_enabled = true
+subsurf_scatter_enabled = true
+subsurf_scatter_strength = 0.25
+subsurf_scatter_skin_mode = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c1ude"]
+albedo_texture = ExtResource("5_fynft")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_djhbu"]
+albedo_texture = ExtResource("8_c315m")
+roughness = 0.51
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i022v"]
+transparency = 1
+cull_mode = 2
+albedo_texture = ExtResource("7_woknq")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3yb7g"]
+albedo_texture = ExtResource("11_ufd5o")
+normal_enabled = true
+normal_texture = ExtResource("13_0qldu")
+ao_enabled = true
+ao_light_affect = 0.47
+ao_texture = ExtResource("12_lkaml")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_onc85"]
+albedo_texture = ExtResource("11_ufd5o")
+normal_enabled = true
+normal_texture = ExtResource("13_0qldu")
+ao_enabled = true
+ao_light_affect = 0.47
+ao_texture = ExtResource("12_lkaml")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cssbn"]
+albedo_texture = ExtResource("12_dvy4s")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xkfxj"]
+albedo_texture = ExtResource("13_l714q")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qcxx3"]
+transparency = 1
+shading_mode = 0
+albedo_texture = ExtResource("12_inb8t")
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ty1hc"]
+
+[node name="npc_test" type="Node3D"]
+
+[node name="npc" type="CharacterBody3D" parent="."]
+
+[node name="skeleton" parent="npc" instance=ExtResource("1_1lmst")]
+bones/0/position = Vector3(0, 0.881941, -4.28595e-06)
+bones/0/rotation = Quaternion(-1.49011e-08, 0, 0, 1)
+bones/1/rotation = Quaternion(1.49011e-08, 0, 0, 1)
+bones/2/rotation = Quaternion(7.4506e-09, 0, 0, 1)
+bones/3/rotation = Quaternion(3.72529e-09, 0, 0, 1)
+bones/6/rotation = Quaternion(0, 0, 0, 1)
+bones/7/rotation = Quaternion(0.109755, 0.000471881, 0.000471879, 0.993958)
+bones/7/scale = Vector3(1, 1, 1)
+bones/8/rotation = Quaternion(0, 0.707107, 0.707107, 0)
+bones/16/rotation = Quaternion(0.707107, 6.12631e-10, -1.99035e-09, 0.707107)
+bones/18/rotation = Quaternion(0.707107, -6.12631e-10, 1.99035e-09, 0.707107)
+bones/21/rotation = Quaternion(0.5, 0.5, 0.5, -0.5)
+bones/22/rotation = Quaternion(0, 1, -5.96045e-08, 0)
+bones/23/rotation = Quaternion(0, -0.707107, 4.21468e-08, 0.707107)
+bones/24/rotation = Quaternion(1.71542e-08, 0.707107, -2.49927e-08, 0.707107)
+bones/25/rotation = Quaternion(-0.214187, 0.673887, 0.214187, 0.673887)
+bones/25/scale = Vector3(1, 0.999392, 0.999392)
+bones/26/rotation = Quaternion(-1.49012e-08, -2.98024e-08, -2.98024e-08, 1)
+bones/27/rotation = Quaternion(0.00513603, 0.00513603, 0.00513603, 0.99996)
+bones/27/scale = Vector3(1, 1, 1)
+bones/28/rotation = Quaternion(2.38228e-22, 1.49011e-08, 1.49011e-08, 1)
+bones/29/rotation = Quaternion(1.49011e-08, 1.49011e-08, -1.49011e-08, 1)
+bones/30/rotation = Quaternion(-1.49011e-08, 1.49011e-08, 1.49011e-08, 1)
+bones/31/rotation = Quaternion(-2.98024e-08, -1.05879e-22, 2.98024e-08, 1)
+bones/32/rotation = Quaternion(-2.98023e-08, -2.98023e-08, 2.98023e-08, 1)
+bones/33/rotation = Quaternion(1.04308e-07, 1.49012e-08, 2.98023e-08, 1)
+bones/34/rotation = Quaternion(0, -2.98024e-08, 0, 1)
+bones/35/rotation = Quaternion(2.98023e-08, -2.98023e-08, 2.98023e-08, 1)
+bones/37/rotation = Quaternion(0, -2.98024e-08, 0, 1)
+bones/38/rotation = Quaternion(-2.98023e-08, -2.98023e-08, 2.98023e-08, 1)
+bones/39/rotation = Quaternion(-2.98023e-08, 4.47035e-08, 4.47035e-08, 1)
+bones/40/rotation = Quaternion(0.5, -0.5, -0.5, -0.5)
+bones/41/rotation = Quaternion(0, 1, -5.96045e-08, 0)
+bones/42/rotation = Quaternion(0, 0.707107, -4.21468e-08, 0.707107)
+bones/43/rotation = Quaternion(1.71542e-08, -0.707107, 2.49927e-08, 0.707107)
+bones/44/rotation = Quaternion(-0.214796, -0.673377, -0.213795, 0.674328)
+bones/44/scale = Vector3(1, 0.999392, 0.999392)
+bones/45/rotation = Quaternion(-1.49012e-08, 2.98024e-08, 2.98024e-08, 1)
+bones/46/rotation = Quaternion(9.31736e-21, -5.96045e-08, 8.9407e-08, 1)
+bones/47/rotation = Quaternion(2.38228e-22, -1.49011e-08, -1.49011e-08, 1)
+bones/48/rotation = Quaternion(1.49011e-08, -1.49011e-08, 1.49011e-08, 1)
+bones/49/rotation = Quaternion(-1.49011e-08, -1.49011e-08, -1.49011e-08, 1)
+bones/50/rotation = Quaternion(-2.98024e-08, 1.05879e-22, -2.98024e-08, 1)
+bones/51/rotation = Quaternion(-2.98023e-08, 2.98023e-08, -2.98023e-08, 1)
+bones/52/rotation = Quaternion(1.04308e-07, -1.49012e-08, -2.98023e-08, 1)
+bones/53/rotation = Quaternion(0, 2.98024e-08, 0, 1)
+bones/54/rotation = Quaternion(2.98023e-08, 2.98023e-08, -2.98023e-08, 1)
+bones/56/rotation = Quaternion(0, 2.98024e-08, 0, 1)
+bones/57/rotation = Quaternion(-2.98023e-08, 2.98023e-08, -2.98023e-08, 1)
+bones/58/rotation = Quaternion(-2.98023e-08, -4.47035e-08, -4.47035e-08, 1)
+bones/59/rotation = Quaternion(-1.49124e-08, -3.57628e-07, 1, 1.8817e-07)
+bones/61/rotation = Quaternion(-1.02318e-12, 1, -1.13687e-12, -1.48094e-08)
+bones/62/rotation = Quaternion(-0.000407163, 0.795105, -0.606471, -0.000407163)
+bones/62/scale = Vector3(1, 1, 1)
+bones/63/rotation = Quaternion(-6.4208e-09, 1, 2.98023e-08, -2.46954e-09)
+bones/64/rotation = Quaternion(1.49124e-08, -3.57628e-07, 1, -1.8817e-07)
+bones/66/rotation = Quaternion(1.02318e-12, 1, -1.13687e-12, 1.48094e-08)
+bones/67/rotation = Quaternion(-0.000282462, 0.825742, -0.564048, -0.000282462)
+bones/67/scale = Vector3(1, 1, 1)
+bones/68/rotation = Quaternion(6.4208e-09, 1, 2.98023e-08, 2.46954e-09)
+
+[node name="body" type="MeshInstance3D" parent="npc/skeleton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
+material_override = SubResource("StandardMaterial3D_a0y8d")
+mesh = ExtResource("1_te8be")
+skin = ExtResource("3_8xfsi")
+
+[node name="eyes" type="MeshInstance3D" parent="npc/skeleton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
+material_override = SubResource("StandardMaterial3D_c1ude")
+mesh = ExtResource("2_s2pal")
+skin = ExtResource("3_8xfsi")
+
+[node name="hair" type="MeshInstance3D" parent="npc/skeleton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
+material_override = SubResource("StandardMaterial3D_djhbu")
+mesh = ExtResource("3_dv2sp")
+skin = ExtResource("3_8xfsi")
+
+[node name="eyelashes" type="MeshInstance3D" parent="npc/skeleton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
+material_override = SubResource("StandardMaterial3D_i022v")
+mesh = ExtResource("4_y14l8")
+skin = ExtResource("3_8xfsi")
+
+[node name="jeans" type="MeshInstance3D" parent="npc/skeleton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
+material_override = SubResource("StandardMaterial3D_3yb7g")
+mesh = ExtResource("5_fjdfk")
+skin = ExtResource("3_8xfsi")
+
+[node name="shirt" type="MeshInstance3D" parent="npc/skeleton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
+material_override = SubResource("StandardMaterial3D_onc85")
+mesh = ExtResource("6_t4kci")
+skin = ExtResource("3_8xfsi")
+
+[node name="teeth" type="MeshInstance3D" parent="npc/skeleton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
+material_override = SubResource("StandardMaterial3D_cssbn")
+mesh = ExtResource("7_yx7er")
+skin = ExtResource("3_8xfsi")
+
+[node name="tongue" type="MeshInstance3D" parent="npc/skeleton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
+material_override = SubResource("StandardMaterial3D_xkfxj")
+skin = ExtResource("3_8xfsi")
+
+[node name="eyes_reflection" type="MeshInstance3D" parent="npc/skeleton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
+material_override = SubResource("StandardMaterial3D_qcxx3")
+mesh = ExtResource("8_27dub")
+skin = ExtResource("3_8xfsi")
+
+[node name="collider" type="CollisionShape3D" parent="npc"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_ty1hc")

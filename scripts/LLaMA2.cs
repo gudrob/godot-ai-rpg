@@ -28,8 +28,7 @@ namespace AIRPG
 
         public static async Task Generate(Session session, string text, int predictTokens = 160, float repeatPenalty = 1.18f, float temperature = 0.7f)
         {
-            Game.Instance.processingBaseText = "Preparing Prompt";
-            Game.Instance.isProcessing = true;
+            Game.SetProcessingInfo("Preparing Prompt");
 
             var aiCharacterToken = $"{session.aiCharacterName}:";
             var playerCharacterToken = $"{session.playerCharacterName}:";
@@ -81,15 +80,16 @@ namespace AIRPG
             int bytesRead;
 
             var stream = await response.Content.ReadAsStreamAsync();
-            Game.Instance.processingBaseText = "Sending Prompt";
-            Game.Instance.isProcessing = true;
+
+            Game.SetProcessingInfo("Sending Prompt");
 
             string tmpString = "";
 
             while ((bytesRead = await stream.ReadAsync(buf, 0, buf.Length)) > 0)
             {
-                Game.Instance.processingBaseText = "Processing AI Response";
-                Game.Instance.isProcessing = true;
+
+                Game.SetProcessingInfo("Processing AI Response");
+
                 if (firstByte == false)
                 {
                     firstByte = true;
@@ -121,8 +121,7 @@ namespace AIRPG
             }
             Instance.TrackLineForTTS(session, "", true);
             Log("Total prompt time: " + sw.Elapsed.TotalMilliseconds + " ms");
-            Game.Instance.processingBaseText = "AI Response finished";
-            Game.Instance.isProcessing = false;
+            Game.SetProcessingInfo("AI Response finished", false);
         }
 
         public static Session StartSession(string aiCharacterName, string playerCharacterName, string basePrompt)
@@ -199,7 +198,7 @@ namespace AIRPG
             }
         }
 
-        public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 3, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = true)
+        public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = true)
         {
             Instance.StartServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory);
         }

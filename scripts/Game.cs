@@ -19,9 +19,9 @@ public partial class Game : Node
 
     public static Game Instance { private set; get; }
 
-    public bool isProcessing = false;
+    bool isProcessing = false;
 
-    public string processingBaseText = "";
+    string processingBaseText = "";
 
     public double processing = 0;
 
@@ -45,6 +45,12 @@ public partial class Game : Node
     public void ForceSend()
     {
         forceSend = true;
+    }
+
+    public static void SetProcessingInfo(string infotext, bool isProcessing = true)
+    {
+        Instance.isProcessing = isProcessing;
+        Instance.processingBaseText = infotext;
     }
 
     public async override void _Process(double delta)

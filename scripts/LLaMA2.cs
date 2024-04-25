@@ -137,7 +137,7 @@ namespace AIRPG
 
         private async void AddToSessionPromptDelayed(Session session, string text)
         {
-            await ToSignal(GetTree().CreateTimer(0.5), SceneTreeTimer.SignalName.Timeout);
+            await ToSignal(GetTree().CreateTimer(0.333), SceneTreeTimer.SignalName.Timeout);
             session.fullPrompt.Append(text);
         }
 

@@ -162,6 +162,7 @@ public partial class TextToSpeech : Node
 
         if (backend == WINDOWS_X64_BACKEND)
         {
+            ttsProcess.StandardInput.WriteLine("set PYTHONIOENCODING=utf_8");
             ttsProcess.StandardInput.WriteLine(".\\env\\Scripts\\Activate");
             ttsProcess.StandardInput.WriteLine(".\\env\\Scripts\\python.exe main.py");
             ttsProcess.StandardInput.Flush();

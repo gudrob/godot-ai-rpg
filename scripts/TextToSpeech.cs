@@ -13,6 +13,8 @@ public partial class TextToSpeech : Node
 
     private int generationCounter = 0;
 
+    private int generationProcessedCounter = 0;
+
     private bool generationRunning = false;
 
     private bool speechProcessing = true;
@@ -45,7 +47,8 @@ public partial class TextToSpeech : Node
 
         generationRunning = true;
 
-        var filePath = $"output/{++generationCounter}_out.wav";
+        var generation = generationCounter++;
+        var filePath = $"output/{generation}_out.wav";
         var filePathFull = Path.Join(backend, filePath);
         var filePathFullOnlyFolder = Path.GetDirectoryName(filePathFull);
 
@@ -54,6 +57,11 @@ public partial class TextToSpeech : Node
             speechProcessing = true;
             Log($"Generating speech with speaker {speaker} and text {text}");
             if (!Directory.Exists(filePathFullOnlyFolder)) Directory.CreateDirectory(filePathFullOnlyFolder);
+
+            while(generationProcessedCounter < generation)
+            {
+                await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+            }
 
             await input.WriteLineAsync(speaker + ":" + filePath + ":" + text);
 
@@ -69,6 +77,7 @@ public partial class TextToSpeech : Node
         }
         finally
         {
+            generationProcessedCounter++;
             generationRunning = false;
         }
 
@@ -121,7 +130,7 @@ public partial class TextToSpeech : Node
         if (backend == UNSUPPORTED_BACKEND)
         {
             Log($"Architecture {architecture} on this platform is currently unsupported");
-            GetTree().Quit();
+            tree.Quit();
         }
 
         Log($"Starting. Working directory: {backend}, tts path: {ttsPath}");

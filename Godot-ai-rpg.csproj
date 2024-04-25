@@ -5,6 +5,10 @@
     <RootNamespace>Godotairpg</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="tts\**" />
+    <EmbeddedResource Remove="tts\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Vosk" Version="0.3.38" />
   </ItemGroup>
 </Project>

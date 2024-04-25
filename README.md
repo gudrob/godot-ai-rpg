@@ -20,9 +20,12 @@ CUDA and Vulkan might also be added at a later time.
 - [ ] Add TTS library for both base platforms
 - [ ] Implement full conversation STT -> AI -> TTS
 - [ ] Refactor code
+- [ ] Make python builds bundled and standalone
 - [ ] Make the AI roleplay properly
 - [ ] Add humanoid example NPC
 - [ ] Add dungeon master AI
+- [ ] Make GPL dependencies optional
+- [ ] Add alternative non-GPL TTS
 
 ### LLaMA Models
 https://huggingface.co/TheBloke/WizardLM-7B-uncensored-GGUF

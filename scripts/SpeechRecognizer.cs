@@ -33,7 +33,7 @@ public partial class SpeechRecognizer : Node
 	private ulong recordTimeStart;
 	private ulong noChangeTimeOutStart;
 	private CancellationTokenSource cancelToken;
-	private int processIntervalMs = 50;
+	private int processIntervalMs = 150;
 
 	public override void _Ready()
 	{

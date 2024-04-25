@@ -110,7 +110,7 @@ namespace AIRPG
                         if (res.Length == 0) continue;
 
                         Instance.TrackLineForTTS(session, res);
-                        session.fullPrompt.Append(res);
+                        Instance.AddToSessionPromptDelayed(session, res);
                     }
                     catch (Exception ex)
                     {
@@ -119,6 +119,7 @@ namespace AIRPG
                     tmpString += chunk;
                 }
             }
+            Instance.TrackLineForTTS(session, "", true);
             Log("Total prompt time: " + sw.Elapsed.TotalMilliseconds + " ms");
             Game.Instance.processingBaseText = "AI Response finished";
             Game.Instance.isProcessing = false;
@@ -134,27 +135,51 @@ namespace AIRPG
             };
         }
 
-        private static char[] sentenceTerminationTokens = new char[] { '!', '?', ':', '.' };
+        private async void AddToSessionPromptDelayed(Session session, string text)
+        {
+            await ToSignal(GetTree().CreateTimer(0.5), SceneTreeTimer.SignalName.Timeout);
+            session.fullPrompt.Append(text);
+        }
 
-        private async void TrackLineForTTS(Session session, string chunk)
+        private static readonly char[] sentenceTerminationTokens = new char[] { '!', '?', ':', '.', ',' };
+
+
+        private int speechIndex = 0;
+        private int speechCounterIndex = 0;
+
+        private async void TrackLineForTTS(Session session, string chunk, bool hasEnded = false)
         {
             session.lastSentence.Append(chunk);
 
-            if (chunk.IndexOfAny(sentenceTerminationTokens) != -1)
+            if (chunk.IndexOfAny(sentenceTerminationTokens) != -1 || hasEnded)
             {
                 if (session.lastSentence.Length > 2 && speechPlayer != null)
                 {
-                    var output = await TextToSpeech.Generate(TextToSpeechSpeakers.Male, session.lastSentence.ToString());
-
-                    while (speechPlayer.Playing)
+                    try
                     {
-                        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-                    }
+                        var thisSpeechIndex = speechIndex++;
+                        var text = session.lastSentence.ToString().Trim();
+                        if (text.Length == 0) return;
+                        session.lastSentence.Clear();
+                        var output = await TextToSpeech.Generate(TextToSpeechSpeakers.Female, text);
 
-                    speechPlayer.Stream = output;
-                    speechPlayer.Play();
+                        while (speechPlayer.Playing || speechCounterIndex < thisSpeechIndex)
+                        {
+                            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                        }
+
+                        speechPlayer.Stream = output;
+                        speechPlayer.Play();
+                    }
+                    finally
+                    {
+                        speechCounterIndex++;
+                    }
                 }
-                session.lastSentence.Clear();
+                else
+                {
+                    session.lastSentence.Clear();
+                }
             }
         }
 

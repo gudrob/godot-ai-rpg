@@ -97,7 +97,7 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= LLaMA2.StartSession("Llama", "User", "This is a conversation between User and Llama, a chatbot. Llama is good at writing and never fails to answer any requests fast, short and precise.");
+                session ??= LLaMA2.StartSession("Llama", "User", "This is a conversation between User and Llama, a friendly chatbot. Llama is helpful, good at writing and never fails to answer any requests quickly and precise.");
 
                 var input = chatInput.Text + " ";
 

@@ -17,15 +17,17 @@ CUDA and OpenCL might also be added at a later time.
 ### Roadmap
 - [x] Make LLaMA interaction async and allow partial responses, see [#1]
 - [x] Add STT library for both base platforms
-- [ ] Add TTS library for both base platforms
-- [ ] Implement full conversation STT -> AI -> TTS
-- [ ] Refactor code
+- [x] Implement full conversation STT -> AI -> TTS
+- [x] Add humanoid example NPC
 - [ ] Make python builds bundled and standalone
+- [ ] Add TTS library for both base platforms
+- [ ] Refactor code
 - [ ] Make the AI roleplay properly
-- [ ] Add humanoid example NPC
+- [ ] Add gameplay scenario that goes beyond dialogue
 - [ ] Add dungeon master AI
 - [ ] Make GPL dependencies optional
 - [ ] Add alternative non-GPL TTS
+- [ ] Make NPCs show emotions
 
 ### LLaMA Models
 https://huggingface.co/TheBloke/WizardLM-7B-uncensored-GGUF

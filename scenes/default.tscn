@@ -1,11 +1,16 @@
-[gd_scene load_steps=14 format=3 uid="uid://s86py3x3v5vd"]
+[gd_scene load_steps=17 format=3 uid="uid://s86py3x3v5vd"]
 
 [ext_resource type="Script" path="res://scripts/LLaMA2.cs" id="1_ut6bg"]
 [ext_resource type="Script" path="res://scripts/Game.cs" id="2_5ulk5"]
 [ext_resource type="Script" path="res://scripts/SpeechUIManager.cs" id="3_lrev8"]
+[ext_resource type="Texture2D" uid="uid://bkitv8uivt03n" path="res://assets/textures/ui/default_panel.png" id="3_ltst5"]
+[ext_resource type="Script" path="res://scenes/AutoScroll.cs" id="4_cn7a3"]
 [ext_resource type="Script" path="res://scripts/SpeechRecognizer.cs" id="4_k56in"]
 [ext_resource type="Script" path="res://scripts/TextToSpeech.cs" id="5_hht3w"]
 [ext_resource type="PackedScene" uid="uid://b5p7aa8uvbsm0" path="res://scenes/npc.tscn" id="6_8d3ht"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lvya5"]
+texture = ExtResource("3_ltst5")
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_juw8d"]
 
@@ -35,24 +40,6 @@ ssao_intensity = 5.62
 script = ExtResource("1_ut6bg")
 character = NodePath("../npc")
 
-[node name="debug" type="Control" parent="."]
-visible = false
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="debug_container" type="ScrollContainer" parent="debug"]
-layout_mode = 0
-offset_left = 8.0
-offset_top = 11.0
-offset_right = 1143.0
-offset_bottom = 637.0
-
-[node name="debug_label" type="Label" parent="debug/debug_container"]
-layout_mode = 2
-text = "Output"
-
 [node name="game" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
@@ -67,15 +54,20 @@ grow_vertical = 2
 script = ExtResource("2_5ulk5")
 
 [node name="scroll_container" type="ScrollContainer" parent="game/chat"]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 11.0
-offset_right = 1148.0
-offset_bottom = 490.0
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 6.0
+offset_top = 5.0
+offset_right = 1146.0
+offset_bottom = 135.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_lvya5")
 horizontal_scroll_mode = 0
+script = ExtResource("4_cn7a3")
 
 [node name="chat_history" type="Label" parent="game/chat/scroll_container"]
-custom_minimum_size = Vector2(1130, 475.38)
+custom_minimum_size = Vector2(1131.24, 0)
 layout_mode = 2
 autowrap_mode = 3
 
@@ -190,11 +182,11 @@ offset_bottom = 40.0
 script = ExtResource("5_hht3w")
 
 [node name="camera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.58, 1.215)
+transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 1.635, 0.69)
 current = true
 
 [node name="npc" parent="." node_paths=PackedStringArray("lookAtTarget") instance=ExtResource("6_8d3ht")]
-transform = Transform3D(0.999848, 0.0174524, 0, -0.0171873, 0.984658, -0.173648, -0.00303058, 0.173622, 0.984808, 0, 0.135, 0)
+transform = Transform3D(0.999848, 0.0174524, 0, -0.0174524, 0.999848, 0, 0, 0, 1, 0, 0, 0)
 lookAtTarget = NodePath("../camera")
 
 [node name="environment" type="WorldEnvironment" parent="."]

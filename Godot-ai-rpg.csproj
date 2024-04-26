@@ -11,4 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Vosk" Version="0.3.38" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="scenes\" />
+  </ItemGroup>
 </Project>

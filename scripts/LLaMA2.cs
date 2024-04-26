@@ -22,7 +22,7 @@ namespace AIRPG
         private HttpService httpService;
 
         [Export]
-        public AudioStreamPlayer speechPlayer;
+        public NPC character;
 
         const string UNSUPPORTED_BACKEND = "none";
 
@@ -152,7 +152,7 @@ namespace AIRPG
 
             if (chunk.IndexOfAny(sentenceTerminationTokens) != -1 || hasEnded)
             {
-                if (session.lastSentence.Length > 2 && speechPlayer != null)
+                if (session.lastSentence.Length > 2)
                 {
                     try
                     {
@@ -162,13 +162,12 @@ namespace AIRPG
                         session.lastSentence.Clear();
                         var output = await TextToSpeech.Generate(TextToSpeechSpeakers.Female, text);
 
-                        while (speechPlayer.Playing || speechCounterIndex < thisSpeechIndex)
+                        while (character.IsSpeaking() || speechCounterIndex < thisSpeechIndex)
                         {
                             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
                         }
 
-                        speechPlayer.Stream = output;
-                        speechPlayer.Play();
+                        character?.Speak(output, true);
                     }
                     finally
                     {

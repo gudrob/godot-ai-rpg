@@ -3,10 +3,10 @@ A prototype using meta's LLaMA 2 (7B) as a dungeon master and NPC controller in 
 
 ### Conversation and Interaction Workflow
 The general workflow and tools for interaction with NPCS are intended to be the following:
-#### 1. Player speaks to NPC (Vosk) or types into chat
-#### 2. Input is processed to AI prompt 
-#### 3. AI generates response (LLaMA2.cpp Server)
-#### 4. Speech is generated (vctk/vits TTS model & Espeak)
+- Player speaks to NPC (Vosk) or types into chat
+- Input is processed to AI prompt 
+- AI generates response (LLaMA2.cpp Server)
+- Speech is generated (vctk/vits TTS model & Espeak)
 
 ### Supported Platforms
 Currently MacOS ARM64 and Windows X64. \
@@ -37,7 +37,7 @@ WizardLM-7B-uncensored.Q4_K_M.gguf has been working fine for me on both Windows 
 
 #### Windows x64
 Everything except for the TTS backend is bundled with the project and should work out of the box.\
-To install the TTS backend execute the following on cmd in the project's directory.\
+To install the TTS backend execute the following on cmd in the project's directory.
 ```
 cd tts\win-x64
 .\python\Scripts\virtualenv env
@@ -51,7 +51,7 @@ Please read error messages carefully.
 
 ### Issues
 At the moment the project is a Franksteinish abomination and prone to breaking. \
-If you have an issue, please post as much info as possible. \ 
+If you have an issue, please post as much info as possible. \
 Do not post screenshots of error message, copy them. \
 All backend output is written to the godot console. \
 Please copy this output to your issue as well unless you are 100% sure it is unrelated.
@@ -63,6 +63,8 @@ In case you are doing heavy lifting in your code, do it on a thread or async.
 
 ### Licensing
 
+#### Code
+
 This project's code - MIT \
 llama.cpp - MIT \
 vits - MIT \
@@ -71,4 +73,12 @@ vosk-model-small-en-us-0.15 - Apache 2.0 \
 Coqui TTS - Mozilla Public License Version 2.0 \
 EspeakNG - GNU GPL v3
 
-Since GNU GPL v3 is very restrictive, you might want to select a different TTS model that does not use EspeakNG. This setting needs to be changed in the main.py of the TTS backends.
+Since GNU GPL v3 is very restrictive, you might want to select a different TTS model that does not use EspeakNG. \
+This setting needs to be changed in the main.py of the TTS backends.
+
+#### Assets
+
+hair.obj, elvs_grump_hair by Elvaerwyn, CC-BY, taken from MakeHuman Asset Pack Hair 02 https://static.makehumancommunity.org/assets/assetpacks/hair02.html \
+skin_normal.png, Normalmap from Kamden Skin, CC-BY 4.0, taken from http://www.makehumancommunity.org/skin/kamden_skin.html \
+Other NPC-related assets are public domain, big thanks for the makehuman project for existing.
+

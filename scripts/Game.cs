@@ -29,7 +29,7 @@ public partial class Game : Node
 
     public override void _Ready()
     {
-        LLaMA2.Initialize();
+        LLaMA.Initialize();
 
         processingText = FindChild("processing_text") as Label;
         chatHistory = FindChild("chat_history") as Label;
@@ -103,11 +103,11 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= LLaMA2.StartSession("Llama", "User", "This is a conversation between User and Llama, a friendly chatbot. Llama is helpful, good at writing and never fails to answer any requests quickly and precise.");
+                session ??= LLaMA.StartSession("Llama", "User", "This is a conversation between User and Llama, a friendly chatbot. Llama is helpful, good at writing and never fails to answer any requests quickly and precise.");
 
                 var input = chatInput.Text + " ";
 
-                var promptTask = LLaMA2.Generate(session, input);
+                var promptTask = LLaMA.Generate(session, input);
 
                 while (!promptTask.IsCompleted)
                 {

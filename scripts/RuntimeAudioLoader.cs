@@ -1,5 +1,6 @@
 ﻿using Godot;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 public class RuntimeAudioLoader
@@ -84,4 +85,17 @@ public class RuntimeAudioLoader
         }
         return data;
     }
+
+    static void Log(string info)
+    {
+        GD.Print(LogPrefix() + info);
+    }
+
+    private static DateTime startTime = Process.GetCurrentProcess().StartTime.ToUniversalTime();
+    static string LogPrefix()
+    {
+        var time = DateTime.UtcNow - startTime;
+        return $"[AudioLoader][{time:hh\\:mm\\:ss\\:fff}] ";
+    }
+
 }

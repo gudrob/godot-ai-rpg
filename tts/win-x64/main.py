@@ -1,10 +1,14 @@
 import torch
 from TTS.api import TTS
 
-# Get device
-device = "cuda" if torch.cuda.is_available() else "cpu"
 
-# Init TTS
+print("-ALLOW CUDA-")
+allow_cuda = input()
+if allow_cuda.lower() == 'y' :
+    device = "cuda" if torch.cuda.is_available() else "cpu" 
+else:
+    device = "cpu"
+
 tts = TTS("tts_models/en/vctk/vits").to(device)
 
 while True:

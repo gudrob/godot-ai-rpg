@@ -33,6 +33,9 @@ public partial class TextToSpeech : Node
 
     const string MACOS_ARM64_BACKEND = "./tts/macos-arm64/";
 
+    [Export]
+    public bool allowCuda = false;
+
     public static async Task<AudioStreamWav> Generate(string speaker, string text, bool deleteAfterLoading = true)
     {
         return await instance._Generate(speaker, text);
@@ -188,7 +191,12 @@ public partial class TextToSpeech : Node
                 Log("Ready to generate");
                 speechProcessing = false;
             }
-            else if (data.Length > 0)
+            else if (data.Contains("-ALLOW CUDA-"))
+            {
+                Log("Allow CUDA? " + (allowCuda ? "Yes" : "No"));
+                input.WriteLineAsync(allowCuda ? "y" : "n");
+            }
+            else if(data.Length > 0)
             {
                 Log(data);
             }
@@ -202,9 +210,10 @@ public partial class TextToSpeech : Node
         GD.Print(LogPrefix() + info);
     }
 
+    private static DateTime startTime = Process.GetCurrentProcess().StartTime.ToUniversalTime();
     static string LogPrefix()
     {
-        var time = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
+        var time = DateTime.UtcNow - startTime;
         return $"[TTS][{time:hh\\:mm\\:ss\\:fff}] ";
     }
 }

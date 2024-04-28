@@ -51,10 +51,12 @@ cull_mode = 2
 albedo_color = Color(0.243137, 0.243137, 0.243137, 1)
 albedo_texture = ExtResource("8_c315m")
 metallic_specular = 0.4
-roughness = 0.6
+roughness = 0.85
 normal_enabled = true
 normal_scale = 1.16
 normal_texture = ExtResource("3_3i1im")
+subsurf_scatter_enabled = true
+subsurf_scatter_strength = 0.39
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i022v"]
 transparency = 1

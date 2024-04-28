@@ -237,9 +237,10 @@ public partial class SpeechRecognizer : Node
         GD.Print(LogPrefix() + info);
     }
 
+    private static DateTime startTime = Process.GetCurrentProcess().StartTime.ToUniversalTime();
     static string LogPrefix()
     {
-        var time = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
+        var time = DateTime.UtcNow - startTime;
         return $"[SPEECH RECOGNITION][{time:hh\\:mm\\:ss\\:fff}] ";
     }
 }

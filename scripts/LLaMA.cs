@@ -11,9 +11,9 @@ using System.Text.Json;
 
 namespace AIRPG
 {
-    public partial class LLaMA2 : Node
+    public partial class LLaMA : Node
     {
-        private static LLaMA2 Instance;
+        private static LLaMA Instance;
 
         private static Process LLaMAProcess;
 
@@ -25,6 +25,8 @@ namespace AIRPG
         public NPC character;
 
         const string UNSUPPORTED_BACKEND = "none";
+
+        LLaMAVersion version = LLaMAVersion.Version2;
 
         public static async Task Generate(Session session, string text, int predictTokens = 160, float repeatPenalty = 1.18f, float temperature = 0.7f)
         {
@@ -44,30 +46,62 @@ namespace AIRPG
                 .Append(System.Environment.NewLine)
                 .Append(aiCharacterToken);
 
-            var body = "{"
-            + $"\"cache_prompt\": true,"
-            + $"\"frequency_penalty\": 0,"
-            + $"\"grammar\": \"\","
-            + $"\"image_data\": [],"
-            + $"\"min_p\": 0.05,"
-            + $"\"mirostat\": 0,"
-            + $"\"mirostat_eta\": 0.1,"
-            + $"\"mirostat_tau\": 5,"
-            + $"\"n_predict\": {predictTokens},"
-            + $"\"n_probs\": 0,"
-            + $"\"presence_penalty\": 0,"
-            + $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
-            + $"\"repeat_last_n\": 256,"
-            + $"\"repeat_penalty\": {repeatPenalty},"
-            + $"\"slot_id\": -1,"
-            + $"\"stop\": [\"</s>\", \"<|eot_id|>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"],"
-            + $"\"stream\": true,"
-            + $"\"temperature\": {temperature},"
-            + $"\"tfs_z\": 1,"
-            + $"\"top_k\": 5,"
-            + $"\"top_p\": 0.5,"
-            + $"\"typical_p\": 1"
-            + "}";
+            string body;
+
+            if (Instance.version == LLaMAVersion.Version2)
+            {
+                body = "{"
+                + $"\"cache_prompt\": true,"
+                + $"\"frequency_penalty\": 0,"
+                + $"\"grammar\": \"\","
+                + $"\"image_data\": [],"
+                + $"\"min_p\": 0.05,"
+                + $"\"mirostat\": 0,"
+                + $"\"mirostat_eta\": 0.1,"
+                + $"\"mirostat_tau\": 5,"
+                + $"\"n_predict\": {predictTokens},"
+                + $"\"n_probs\": 0,"
+                + $"\"presence_penalty\": 0,"
+                + $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
+                + $"\"repeat_last_n\": 256,"
+                + $"\"repeat_penalty\": {repeatPenalty},"
+                + $"\"slot_id\": -1,"
+                + $"\"stop\": [\"</s>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"],"
+                + $"\"stream\": true,"
+                + $"\"temperature\": {temperature},"
+                + $"\"tfs_z\": 1,"
+                + $"\"top_k\": 15,"
+                + $"\"top_p\": 0.5,"
+                + $"\"typical_p\": 1"
+                + "}";
+            }
+            else
+            {
+                body = "{"
+                + $"\"cache_prompt\": true,"
+                + $"\"frequency_penalty\": 0,"
+                + $"\"grammar\": \"\","
+                + $"\"image_data\": [],"
+                + $"\"min_p\": 0.05,"
+                + $"\"mirostat\": 0,"
+                + $"\"mirostat_eta\": 0.1,"
+                + $"\"mirostat_tau\": 5,"
+                + $"\"n_predict\": {predictTokens},"
+                + $"\"n_probs\": 0,"
+                + $"\"presence_penalty\": 0,"
+                + $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
+                + $"\"repeat_last_n\": 256,"
+                + $"\"repeat_penalty\": {repeatPenalty},"
+                + $"\"slot_id\": -1,"
+                + $"\"stop\": [\"<|start_header_id|>\", \"<|end_header_id|>\", \"<|eot_id|>\", \"{aiCharacterToken}\", \"{playerCharacterToken}\"],"
+                + $"\"stream\": true,"
+                + $"\"temperature\": {temperature},"
+                + $"\"tfs_z\": 1,"
+                + $"\"top_k\": 15,"
+                + $"\"top_p\": 0.5,"
+                + $"\"typical_p\": 1"
+                + "}";
+            }
 
             GD.Print(body);
 
@@ -76,7 +110,7 @@ namespace AIRPG
 
             var response = await Instance.httpService.PostAsync(Instance.completionAddress, body, "application/json");
 
-            byte[] buf = new byte[8192];
+            byte[] buf = new byte[32768];
             int bytesRead;
 
             var stream = await response.Content.ReadAsStreamAsync();
@@ -87,7 +121,6 @@ namespace AIRPG
 
             while ((bytesRead = await stream.ReadAsync(buf, 0, buf.Length)) > 0)
             {
-
                 Game.SetProcessingInfo("Processing AI Response");
 
                 if (firstByte == false)
@@ -104,6 +137,11 @@ namespace AIRPG
                 {
                     try
                     {
+                        if (chunkToProcess.Contains("{\"content\":\"\",\"id_slot\"") && chunkToProcess.Contains("\"stop\":true,\"model\":\""))
+                        {
+                            Log("End of data");
+                            goto SkipDataParsing;
+                        }
                         Log("Data received: " + chunkToProcess);
                         var responseDict = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(chunkTrimmed);
                         var res = responseDict["content"].ToString();
@@ -119,6 +157,8 @@ namespace AIRPG
                     tmpString += chunk;
                 }
             }
+
+        SkipDataParsing:
             Instance.TrackLineForTTS(session, "", true);
             Log("Total prompt time: " + sw.Elapsed.TotalMilliseconds + " ms");
             Game.SetProcessingInfo("AI Response finished", false);
@@ -126,12 +166,24 @@ namespace AIRPG
 
         public static Session StartSession(string aiCharacterName, string playerCharacterName, string basePrompt)
         {
-            return new Session()
+            if (Instance.version == LLaMAVersion.Version2)
             {
-                aiCharacterName = aiCharacterName,
-                playerCharacterName = playerCharacterName,
-                fullPrompt = new(basePrompt)
-            };
+                return new Session()
+                {
+                    aiCharacterName = aiCharacterName,
+                    playerCharacterName = playerCharacterName,
+                    fullPrompt = new(basePrompt)
+                };
+            }
+            else
+            {
+                return new Session()
+                {
+                    aiCharacterName = aiCharacterName,
+                    playerCharacterName = playerCharacterName,
+                    fullPrompt = new(basePrompt)
+                };
+            }
         }
 
         private async void AddToSessionPromptDelayed(Session session, string text)
@@ -197,9 +249,9 @@ namespace AIRPG
             }
         }
 
-        public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = true)
+        public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = false, LLaMAVersion version = LLaMAVersion.Version2)
         {
-            Instance.StartServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory);
+            Instance.StartServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory, version);
         }
 
         private static string SelectBackend(Architecture architecture)
@@ -218,8 +270,10 @@ namespace AIRPG
             return UNSUPPORTED_BACKEND;
         }
 
-        private bool StartServer(int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory)
+        private bool StartServer(int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory, LLaMAVersion version)
         {
+            this.version = version;
+
             completionAddress = $"http://{host}:{port}/completion";
 
             var architecture = RuntimeInformation.ProcessArchitecture;
@@ -280,9 +334,10 @@ namespace AIRPG
             GD.Print(LogPrefix() + info);
         }
 
+        private static DateTime startTime = Process.GetCurrentProcess().StartTime.ToUniversalTime();
         static string LogPrefix()
         {
-            var time = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
+            var time = DateTime.UtcNow - startTime;
             return $"[LLAMA][{time:hh\\:mm\\:ss\\:fff}] ";
         }
 

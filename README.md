@@ -25,8 +25,7 @@ CUDA and OpenCL might also be added at a later time.
 - [ ] Make the AI roleplay properly
 - [ ] Add gameplay scenario that goes beyond dialogue
 - [ ] Add dungeon master AI
-- [ ] Make GPL dependencies optional
-- [ ] Add alternative non-GPL TTS
+- [ ] Alter GPL and Mozilla licensed parts to optional plugins so only plugin code needs to be disclosed
 - [ ] Make NPCs show emotions
 
 ### LLaMA Models
@@ -72,9 +71,6 @@ LLaMA - Llama 2 Community License Agreement \
 vosk-model-small-en-us-0.15 - Apache 2.0 \
 Coqui TTS - Mozilla Public License Version 2.0 \
 EspeakNG - GNU GPL v3
-
-Since GNU GPL v3 is very restrictive, you might want to select a different TTS model that does not use EspeakNG. \
-This setting needs to be changed in the main.py of the TTS backends.
 
 #### Assets
 

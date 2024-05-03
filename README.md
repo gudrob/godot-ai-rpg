@@ -6,7 +6,7 @@ The general workflow and tools for interaction with NPCS are intended to be the 
 - Player speaks to NPC (Vosk) or types into chat
 - Input is processed to AI prompt 
 - AI generates response (LLaMA2.cpp Server)
-- Speech is generated (piper)
+- Speech is generated (piper with LibriTTS)
 
 ### Supported Platforms
 Currently MacOS ARM64 and Windows X64. \
@@ -19,13 +19,12 @@ CUDA and OpenCL might also be added at a later time.
 - [x] Add STT library for both base platforms
 - [x] Implement full conversation STT -> AI -> TTS
 - [x] Add humanoid example NPC
-- [ ] Make python builds bundled and standalone
 - [ ] Add TTS library for both base platforms
 - [ ] Refactor code
+- [ ] Introduce TTS plugin system so own solutions can be used
 - [ ] Make the AI roleplay properly
 - [ ] Add gameplay scenario that goes beyond dialogue
 - [ ] Add dungeon master AI
-- [ ] Alter GPL parts to optional plugins and provide simple base to circumvent license stuff
 - [ ] Make NPCs show emotions
 
 ### LLaMA Models
@@ -35,18 +34,11 @@ WizardLM-7B-uncensored.Q4_K_M.gguf has been working fine for me on both Windows 
 ### Installation
 
 #### Windows x64
-Everything except for the TTS backend is bundled with the project and should work out of the box.\
-To install the TTS backend execute the following on cmd in the project's directory.
-```
-cd tts\win-x64
-.\python\Scripts\virtualenv env
-.\env\Scripts\Activate
-pip install tts
-```
-Then you need to replace the code in \tts\win-x64\env\Lib\site-packages\TTS\tts\utils\text\phonemizers\espeak_wrapper.py \
-with the code from \tts\win-x64\custom_espeak_wrapper.py, so the bundled espeak can work. \
-Alternatively you will have to have espeak or espeak-ng installed and available on path so the cmd can call it. \
+Everything should work out of the box, you only need a fitting LLaMA 2 model and place it in model and rename it to model.gguf. \
 Please read error messages carefully.
+
+#### MacOS ARM64
+Currently TTS is not working for MacOS as the project is moving away from bundled python.
 
 ### Issues
 At the moment the project is a Franksteinish abomination and prone to breaking. \

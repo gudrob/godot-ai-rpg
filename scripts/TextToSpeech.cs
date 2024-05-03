@@ -33,6 +33,8 @@ public partial class TextToSpeech : Node
 
     const string MACOS_ARM64_BACKEND = "./tts/macos-arm64/";
 
+    string outputFilePath = "";
+
     [Export]
     public bool allowCuda = false;
 
@@ -51,22 +53,19 @@ public partial class TextToSpeech : Node
         generationRunning = true;
 
         var generation = generationCounter++;
-        var filePath = $"output/{generation}_out.wav";
-        var filePathFull = Path.Join(backend, filePath);
-        var filePathFullOnlyFolder = Path.GetDirectoryName(filePathFull);
 
         try
         {
             speechProcessing = true;
             Log($"Generating speech with speaker {speaker} and text {text}");
-            if (!Directory.Exists(filePathFullOnlyFolder)) Directory.CreateDirectory(filePathFullOnlyFolder);
+            Directory.CreateDirectory(Path.Join(backend, "/output"));
 
-            while(generationProcessedCounter < generation)
+            while (generationProcessedCounter < generation)
             {
                 await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
             }
 
-            await input.WriteLineAsync(speaker + ":" + filePath + ":" + text);
+            await input.WriteLineAsync(speaker[..3] + text);
 
             while (speechProcessing)
             {
@@ -88,8 +87,8 @@ public partial class TextToSpeech : Node
 
         try
         {
-            audioFile = await RuntimeAudioLoader.LoadFile(filePathFull);
-            if (deleteAfterLoading) File.Delete(filePathFull);
+            audioFile = await RuntimeAudioLoader.LoadFile(outputFilePath);
+            if (deleteAfterLoading) File.Delete(outputFilePath);
         }
         catch (Exception exception)
         {
@@ -114,13 +113,13 @@ public partial class TextToSpeech : Node
         {
             Log("Detected MacOS on Arm64");
             backend = MACOS_ARM64_BACKEND;
-            ttsPath = "env/bin/python";
+            ttsPath = "./piper/piper";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && architecture == Architecture.X64)
         {
             Log("Detected Windows on X64");
             backend = WINDOWS_X64_BACKEND;
-            ttsPath = "env/Scripts/python.exe";
+            ttsPath = "piper\\piper.exe";
         }
     }
 
@@ -150,8 +149,6 @@ public partial class TextToSpeech : Node
         ttsProcess.ErrorDataReceived += processErrorDataReceived;
         ttsProcess.OutputDataReceived += processOutputDataReceived;
         ttsProcess.StartInfo.WorkingDirectory = backend;
-        ttsProcess.StartInfo.Arguments = "main.py";
-        ttsProcess.StartInfo.FileName = backend + ttsPath;
 
         if (backend == WINDOWS_X64_BACKEND)
         {
@@ -165,9 +162,7 @@ public partial class TextToSpeech : Node
 
         if (backend == WINDOWS_X64_BACKEND)
         {
-            ttsProcess.StandardInput.WriteLine("set PYTHONIOENCODING=utf_8");
-            ttsProcess.StandardInput.WriteLine(".\\env\\Scripts\\Activate");
-            ttsProcess.StandardInput.WriteLine(".\\env\\Scripts\\python.exe main.py");
+            ttsProcess.StandardInput.WriteLine(ttsPath + " --model ./piper/libri_medium.onnx --output_dir ./piper/output --config ./piper/libri_medium.json --length_scale 1.5");
             ttsProcess.StandardInput.Flush();
         }
 
@@ -191,13 +186,10 @@ public partial class TextToSpeech : Node
                 Log("Ready to generate");
                 speechProcessing = false;
             }
-            else if (data.Contains("-ALLOW CUDA-"))
+            else if (data.Length > 0)
             {
-                Log("Allow CUDA? " + (allowCuda ? "Yes" : "No"));
-                input.WriteLineAsync(allowCuda ? "y" : "n");
-            }
-            else if(data.Length > 0)
-            {
+                outputFilePath = data;
+                speechProcessing = false;
                 Log(data);
             }
         }

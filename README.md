@@ -6,7 +6,7 @@ The general workflow and tools for interaction with NPCS are intended to be the 
 - Player speaks to NPC (Vosk) or types into chat
 - Input is processed to AI prompt 
 - AI generates response (LLaMA2.cpp Server)
-- Speech is generated (vctk/vits TTS model & Espeak)
+- Speech is generated (piper)
 
 ### Supported Platforms
 Currently MacOS ARM64 and Windows X64. \
@@ -25,7 +25,7 @@ CUDA and OpenCL might also be added at a later time.
 - [ ] Make the AI roleplay properly
 - [ ] Add gameplay scenario that goes beyond dialogue
 - [ ] Add dungeon master AI
-- [ ] Alter GPL and Mozilla licensed parts to optional plugins so only plugin code needs to be disclosed
+- [ ] Alter GPL parts to optional plugins and provide simple base to circumvent license stuff
 - [ ] Make NPCs show emotions
 
 ### LLaMA Models
@@ -67,14 +67,15 @@ In case you are doing heavy lifting in your code, do it on a thread or async.
 This project's code - MIT \
 llama.cpp - MIT \
 vits - MIT \
+piper - MIT \
 LLaMA - Llama 2 Community License Agreement \
 vosk-model-small-en-us-0.15 - Apache 2.0 \
-Coqui TTS - Mozilla Public License Version 2.0 \
-EspeakNG - GNU GPL v3
+Libri TTS Medium - CC BY 4.0 - "LibriTTS: A Corpus Derived from LibriSpeech for Text-to-Speech", Heiga Zen, Viet Dang, Rob Clark, Yu Zhang, Ron J. Weiss, Ye Jia, Zhifeng Chen, and Yonghui Wu, arXiv, 2019
+EspeakNG - GNU GPL v3 
 
 #### Assets
 
 hair.obj, elvs_grump_hair by Elvaerwyn, CC-BY, taken from MakeHuman Asset Pack Hair 02 https://static.makehumancommunity.org/assets/assetpacks/hair02.html \
-skin_normal.png, Normalmap from Kamden Skin, CC-BY 4.0, taken from http://www.makehumancommunity.org/skin/kamden_skin.html \
-Other NPC-related assets are public domain, big thanks for the makehuman project for existing.
+skin_normal.png, Normalmap from Kamden Skin by Mindfront, CC-BY 4.0, taken from http://www.makehumancommunity.org/skin/kamden_skin.html \
+Other NPC-related assets are public domain, big thanks for the makehuman project and contributors for existing and being generally very awesome.
 

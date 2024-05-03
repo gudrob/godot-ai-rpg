@@ -41,7 +41,6 @@ Please read error messages carefully.
 Currently TTS is not working for MacOS as the project is moving away from bundled python.
 
 ### Issues
-At the moment the project is a Franksteinish abomination and prone to breaking. \
 If you have an issue, please post as much info as possible. \
 Do not post screenshots of error message, copy them. \
 All backend output is written to the godot console. \
@@ -62,7 +61,7 @@ vits - MIT \
 piper - MIT \
 LLaMA - Llama 2 Community License Agreement \
 vosk-model-small-en-us-0.15 - Apache 2.0 \
-Libri TTS Medium - CC BY 4.0 - "LibriTTS: A Corpus Derived from LibriSpeech for Text-to-Speech", Heiga Zen, Viet Dang, Rob Clark, Yu Zhang, Ron J. Weiss, Ye Jia, Zhifeng Chen, and Yonghui Wu, arXiv, 2019
+Libri TTS Medium - CC BY 4.0 - "LibriTTS: A Corpus Derived from LibriSpeech for Text-to-Speech", Heiga Zen, Viet Dang, Rob Clark, Yu Zhang, Ron J. Weiss, Ye Jia, Zhifeng Chen, and Yonghui Wu, arXiv, 2019 \
 EspeakNG - GNU GPL v3 
 
 #### Assets

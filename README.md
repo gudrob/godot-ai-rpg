@@ -1,5 +1,5 @@
-# Godot AI RPG
-A prototype using meta's LLaMA 2 (7B) as a dungeon master and NPC controller in an RPG
+# Godot Voiced AI NPCs
+A prototype using meta's LLaMA 2 (7B) as NPC controller in an RPG with microphone input and text to speech output in realtime
 
 ### Conversation and Interaction Workflow
 The general workflow and tools for interaction with NPCS are intended to be the following:
@@ -29,7 +29,7 @@ CUDA and OpenCL might also be added at a later time.
 
 ### LLaMA Models
 https://huggingface.co/TheBloke/WizardLM-7B-uncensored-GGUF
-WizardLM-7B-uncensored.Q4_K_M.gguf has been working fine for me on both Windows and MacOS
+WizardLM-7B-uncensored.Q4_K_M.gguf has proven to work on both Windows and MacOS for this project
 
 ### Installation
 
@@ -49,7 +49,10 @@ Please copy this output to your issue as well unless you are 100% sure it is unr
 ### Contribution
 Feel free to make a PR to add to or improve the project. \
 Keep it at a reasonable size, though, please. \
-In case you are doing heavy lifting in your code, do it on a thread or async.
+In case you are doing heavy lifting in your code, do it on a thread or async. \
+#### Possible, needed contributons
+While piper is very fast and very cool for tts it depends on espeak which is GPL v3 licensed. If someone has decent knowledge in this field, it would be great if you could find a way to avoid espeak or anything that needs source disclosure. \
+Also a TTS model trained on different emotions would be greatly appreciated.
 
 ### Licensing
 

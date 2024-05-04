@@ -113,13 +113,13 @@ public partial class TextToSpeech : Node
         {
             Log("Detected MacOS on Arm64");
             backend = MACOS_ARM64_BACKEND;
-            ttsPath = "./piper/piper";
+            ttsPath = "./tts";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && architecture == Architecture.X64)
         {
             Log("Detected Windows on X64");
             backend = WINDOWS_X64_BACKEND;
-            ttsPath = "piper\\piper.exe";
+            ttsPath = "tts.exe";
         }
     }
 
@@ -162,7 +162,7 @@ public partial class TextToSpeech : Node
 
         if (backend == WINDOWS_X64_BACKEND)
         {
-            ttsProcess.StandardInput.WriteLine(ttsPath + " --model ./piper/libri_medium.onnx --output_dir ./piper/output --config ./piper/libri_medium.json --length_scale 1.5");
+            ttsProcess.StandardInput.WriteLine(ttsPath + " --model ./libri_medium.onnx --output_dir ./output --config ./libri_medium.json --length_scale 1.5");
             ttsProcess.StandardInput.Flush();
         }
 
@@ -186,10 +186,14 @@ public partial class TextToSpeech : Node
                 Log("Ready to generate");
                 speechProcessing = false;
             }
+            else if (data.StartsWith("-FILEPATH-"))
+            {
+                outputFilePath = data["-FILEPATH-".Length..];
+                speechProcessing = false;
+                Log(data);
+            }
             else if (data.Length > 0)
             {
-                outputFilePath = data;
-                speechProcessing = false;
                 Log(data);
             }
         }

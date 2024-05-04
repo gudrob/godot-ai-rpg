@@ -65,7 +65,6 @@ piper - MIT \
 LLaMA - Llama 2 Community License Agreement \
 vosk-model-small-en-us-0.15 - Apache 2.0 \
 Libri TTS Medium - CC BY 4.0 - "LibriTTS: A Corpus Derived from LibriSpeech for Text-to-Speech", Heiga Zen, Viet Dang, Rob Clark, Yu Zhang, Ron J. Weiss, Ye Jia, Zhifeng Chen, and Yonghui Wu, arXiv, 2019 \
-EspeakNG - GNU GPL v3 
 
 #### Assets
 

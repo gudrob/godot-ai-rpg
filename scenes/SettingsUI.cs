@@ -31,29 +31,65 @@ public partial class SettingsUI : Control
 
     public override void _Ready()
     {
-        var settings = LoadSettings();
+        var loadedSettings = LoadSettings();
 
-        if(settings == null)
+        if (loadedSettings == null)
         {
-            this.settings.GpuLayers = (int)slider_gpu_layers.Value;
-            this.settings.PhonemeLength = (float)slider_phoneme_length.Value;
-            this.settings.Temperature = (float)slider_temperature.Value;
-            this.settings.TextDelay = (float)slider_text_delay.Value;
+            ApplyValues();
         }
         else
         {
-            this.settings = settings;
+            settings.GpuLayers = loadedSettings.GpuLayers;
+            settings.PhonemeLength = loadedSettings.PhonemeLength;
+            settings.Temperature = loadedSettings.Temperature;
+            settings.TextDelay = loadedSettings.TextDelay;
         }
 
-        SaveSettings(this.settings);
+        slider_gpu_layers.ValueChanged += (val) =>
+        {
+            label_gpu_layers.Text = "GPU layers: " + string.Format("{0:0.##}", val);
+        };
 
-        button_start.Pressed += () => { GetTree().ChangeSceneToFile("res://scenes/default.tscn"); };
+        slider_phoneme_length.ValueChanged += (val) =>
+        {
+            label_phoneme_length.Text = "Phoneme length: " + string.Format("{0:0.##}", val);
+        };
+
+        slider_temperature.ValueChanged += (val) =>
+        {
+            label_temperature.Text = "Temperature: " + string.Format("{0:0.##}", val);
+        };
+
+        slider_text_delay.ValueChanged += (val) =>
+        {
+            label_text_delay.Text = "Text delay: " + string.Format("{0:0.##}", val);
+        };
+
+        slider_gpu_layers.Value = settings.GpuLayers;
+        slider_phoneme_length.Value = settings.PhonemeLength ;
+        slider_temperature.Value = settings.Temperature;
+        slider_text_delay.Value = settings.TextDelay;
+
+        button_start.Pressed += () =>
+        {
+            ApplyValues();
+            SaveSettings(settings);
+            GetTree().ChangeSceneToFile("res://scenes/default.tscn");
+        };
+    }
+
+    public void ApplyValues()
+    {
+        settings.GpuLayers = (int)slider_gpu_layers.Value;
+        settings.PhonemeLength = (float)slider_phoneme_length.Value;
+        settings.Temperature = (float)slider_temperature.Value;
+        settings.TextDelay = (float)slider_text_delay.Value;
     }
 
 
     public static Settings LoadSettings(string path = "./settings.json")
     {
-        if(!System.IO.File.Exists(path)) return null;
+        if (!System.IO.File.Exists(path)) return null;
 
         return JsonSerializer.Deserialize<Settings>(System.IO.File.ReadAllText(path));
     }

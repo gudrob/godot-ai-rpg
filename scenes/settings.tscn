@@ -33,7 +33,7 @@ offset_right = 231.0
 offset_bottom = -108.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "GPU Layers: "
+text = "GPU layers: "
 
 [node name="slider_gpu_layers" type="HSlider" parent="."]
 layout_mode = 1

@@ -38,6 +38,8 @@ public partial class TextToSpeech : Node
     [Export]
     public bool allowCuda = false;
 
+    private Stopwatch keepaliveStopwatch = new();
+
     public static async Task<AudioStreamWav> Generate(string speaker, string text, bool deleteAfterLoading = true)
     {
         return await instance._Generate(speaker, text);
@@ -51,6 +53,7 @@ public partial class TextToSpeech : Node
         }
 
         generationRunning = true;
+        keepaliveStopwatch.Restart();
 
         var generation = generationCounter++;
 
@@ -103,6 +106,16 @@ public partial class TextToSpeech : Node
         instance = this;
         tree = GetTree();
         StartServer();
+        keepaliveStopwatch.Start();
+    }
+
+    public override async void _Process(double delta)
+    {
+        if (keepaliveStopwatch.Elapsed.TotalMilliseconds > 25000 && !(generationRunning || speechProcessing))
+        {
+            await input.WriteLineAsync("-KEEPALIVE-");
+            keepaliveStopwatch.Restart();
+        }
     }
 
     private void SelectBackend(Architecture architecture)

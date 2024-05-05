@@ -28,6 +28,7 @@ namespace AIRPG
 
         LLaMAVersion version = LLaMAVersion.Version2;
 
+
         public static async Task Generate(Session session, string text, int predictTokens = 160, float repeatPenalty = 1.18f, float temperature = 0.7f)
         {
             Game.SetProcessingInfo("Preparing Prompt");
@@ -247,7 +248,9 @@ namespace AIRPG
             {
                 process.Kill();
             }
+
         }
+
 
         public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = false, LLaMAVersion version = LLaMAVersion.Version2)
         {

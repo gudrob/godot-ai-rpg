@@ -27,7 +27,8 @@ Godot-ai-rpg.csproj.ol*
 
 *csproj.old*
 
-tts/win-arm64/piper/output/
+tts/win-x64/output/
+tts/win-x64/libri_high.onnx
 tts/macos-arm64/env/share/vim
 tts/macos-arm64/env/share/man
 tts/macos-arm64/env/share/doc

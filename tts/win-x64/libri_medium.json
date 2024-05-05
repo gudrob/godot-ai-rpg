@@ -3,15 +3,11 @@
     "sample_rate": 22050,
     "quality": "medium"
   },
-  "espeak": {
-    "voice": "en-us"
-  },
   "inference": {
     "noise_scale": 0.333,
     "length_scale": 1,
     "noise_w": 0.333
   },
-  "phoneme_type": "espeak",
   "phoneme_map": {},
   "phoneme_id_map": {
     " ": [

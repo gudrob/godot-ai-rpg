@@ -40,12 +40,12 @@ public partial class TextToSpeech : Node
 
     private Stopwatch keepaliveStopwatch = new();
 
-    public static async Task<AudioStreamWav> Generate(string speaker, string text, bool deleteAfterLoading = true)
+    public static async Task<AudioStreamWav> Generate(string speaker, string text, bool deleteAfterLoading = true, string rename = null)
     {
-        return await instance._Generate(speaker, text);
+        return await instance._Generate(speaker, text, deleteAfterLoading, rename);
     }
 
-    private async Task<AudioStreamWav> _Generate(string speaker, string text, bool deleteAfterLoading = true)
+    private async Task<AudioStreamWav> _Generate(string speaker, string text, bool deleteAfterLoading = true, string rename = null)
     {
         while (generationRunning || speechProcessing)
         {
@@ -91,7 +91,18 @@ public partial class TextToSpeech : Node
         try
         {
             audioFile = await RuntimeAudioLoader.LoadFile(outputFilePath);
-            if (deleteAfterLoading) File.Delete(outputFilePath);
+            if (deleteAfterLoading)
+            {
+                _ = Task.Run(() =>
+                {
+                    try { File.Delete(outputFilePath); } catch (Exception exception) { Log("Exception while deleting audio file: \n" + exception); }
+                });
+            }
+            else if (rename != null)
+            {
+                if (!rename.EndsWith(".wav")) rename += ".wav";
+                File.Move(outputFilePath, Path.Join(Path.GetDirectoryName(outputFilePath), rename));
+            }
         }
         catch (Exception exception)
         {
@@ -101,7 +112,7 @@ public partial class TextToSpeech : Node
         return audioFile;
     }
 
-    public override void _Ready()
+    public override async void _Ready()
     {
         GD.Print(System.Environment.CurrentDirectory);
         instance = this;
@@ -164,7 +175,7 @@ public partial class TextToSpeech : Node
         ttsProcess.OutputDataReceived += processOutputDataReceived;
         ttsProcess.StartInfo.WorkingDirectory = backend;
         ttsProcess.StartInfo.FileName = backend + ttsPath;
-        ttsProcess.StartInfo.Arguments = "--model \"./libri_medium.onnx\" --output_dir \"./output\" --config \"./libri_medium.json\" --length_scale 1.66";
+        ttsProcess.StartInfo.Arguments = "--model \"./libri_medium.onnx\" --output_dir \"./output\" --config \"./libri_medium.json\" --length_scale 1.33";
 
 
         ttsProcess.Start();

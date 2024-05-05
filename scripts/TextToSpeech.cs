@@ -29,9 +29,9 @@ public partial class TextToSpeech : Node
 
     const string UNSUPPORTED_BACKEND = "none";
 
-    const string WINDOWS_X64_BACKEND = "./tts/win-x64/";
+    string WINDOWS_X64_BACKEND = System.Environment.CurrentDirectory + "\\tts\\win-x64\\";
 
-    const string MACOS_ARM64_BACKEND = "./tts/macos-arm64/";
+    string MACOS_ARM64_BACKEND = "./tts/macos-arm64/";
 
     string outputFilePath = "";
 
@@ -103,6 +103,7 @@ public partial class TextToSpeech : Node
 
     public override void _Ready()
     {
+        GD.Print(System.Environment.CurrentDirectory);
         instance = this;
         tree = GetTree();
         StartServer();
@@ -126,7 +127,7 @@ public partial class TextToSpeech : Node
         {
             Log("Detected MacOS on Arm64");
             backend = MACOS_ARM64_BACKEND;
-            ttsPath = "./tts";
+            ttsPath = "tts";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && architecture == Architecture.X64)
         {
@@ -162,22 +163,14 @@ public partial class TextToSpeech : Node
         ttsProcess.ErrorDataReceived += processErrorDataReceived;
         ttsProcess.OutputDataReceived += processOutputDataReceived;
         ttsProcess.StartInfo.WorkingDirectory = backend;
+        ttsProcess.StartInfo.FileName = backend + ttsPath;
+        ttsProcess.StartInfo.Arguments = "--model \"./libri_medium.onnx\" --output_dir \"./output\" --config \"./libri_medium.json\" --length_scale 1.66";
 
-        if (backend == WINDOWS_X64_BACKEND)
-        {
-            ttsProcess.StartInfo.FileName = "cmd.exe";
-        }
 
         ttsProcess.Start();
         input = ttsProcess.StandardInput;
         ttsProcess.BeginErrorReadLine();
         ttsProcess.BeginOutputReadLine();
-
-        if (backend == WINDOWS_X64_BACKEND)
-        {
-            ttsProcess.StandardInput.WriteLine(ttsPath + " --model ./libri_medium.onnx --output_dir ./output --config ./libri_medium.json --length_scale 1.5");
-            ttsProcess.StandardInput.Flush();
-        }
 
         void processExited(object sender, EventArgs e)
         {

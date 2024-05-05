@@ -51,8 +51,8 @@ Feel free to make a PR to add to or improve the project. \
 Keep it at a reasonable size, though, please. \
 In case you are doing heavy lifting in your code, do it on a thread or async. \
 #### Possible, needed contributons
-- A TTS model trained on different emotions would be greatly appreciated. \
-- Some pronounciations are off. They follow the offical IPA but somehow the model is not able to pronounce them properly. Maybe the whole ipa list needs to be put through espeak so the differences are evened out.
+- A TTS model trained on different emotions would be greatly appreciated
+- Someone needs to take a look at all speakers and determine the best ones
 
 ### Licensing
 

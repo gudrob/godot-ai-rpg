@@ -1,9 +1,168 @@
-[gd_scene format=3 uid="uid://cuwgsy54q2so2"]
+[gd_scene load_steps=2 format=3 uid="uid://cuwgsy54q2so2"]
 
-[node name="Settings" type="Control"]
+[ext_resource type="Script" path="res://scenes/SettingsUI.cs" id="1_tex6y"]
+
+[node name="settings" type="Control" node_paths=PackedStringArray("label_gpu_layers", "slider_gpu_layers", "label_phoneme_length", "slider_phoneme_length", "label_temperature", "slider_temperature", "label_text_delay", "slider_text_delay", "button_start")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_tex6y")
+label_gpu_layers = NodePath("label_gpu_layers")
+slider_gpu_layers = NodePath("slider_gpu_layers")
+label_phoneme_length = NodePath("label_phoneme_length")
+slider_phoneme_length = NodePath("slider_phoneme_length")
+label_temperature = NodePath("label_temperature")
+slider_temperature = NodePath("slider_temperature")
+label_text_delay = NodePath("label_text_delay")
+slider_text_delay = NodePath("slider_text_delay")
+button_start = NodePath("button_start")
+
+[node name="label_gpu_layers" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -192.0
+offset_top = -203.0
+offset_right = 231.0
+offset_bottom = -108.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "GPU Layers: "
+
+[node name="slider_gpu_layers" type="HSlider" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -192.0
+offset_top = -196.0
+offset_right = 201.0
+offset_bottom = -117.0
+grow_horizontal = 2
+grow_vertical = 2
+min_value = 1.0
+max_value = 33.0
+value = 23.0
+rounded = true
+
+[node name="label_phoneme_length" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -190.0
+offset_top = -119.0
+offset_right = 233.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Phoneme length: "
+
+[node name="slider_phoneme_length" type="HSlider" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -191.0
+offset_top = -111.0
+offset_right = 202.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+min_value = 0.1
+max_value = 3.0
+step = 0.1
+value = 1.4
+
+[node name="label_temperature" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -191.0
+offset_top = -34.0
+offset_right = 232.0
+offset_bottom = 61.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Temperature:"
+
+[node name="slider_temperature" type="HSlider" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -192.0
+offset_top = -26.0
+offset_right = 201.0
+offset_bottom = 53.0
+grow_horizontal = 2
+grow_vertical = 2
+min_value = 0.1
+max_value = 2.0
+step = 0.1
+value = 0.7
+
+[node name="label_text_delay" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -191.0
+offset_top = 55.0
+offset_right = 232.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Text delay: "
+
+[node name="slider_text_delay" type="HSlider" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -192.0
+offset_top = 63.0
+offset_right = 201.0
+offset_bottom = 142.0
+grow_horizontal = 2
+grow_vertical = 2
+min_value = 0.1
+max_value = 2.0
+step = 0.1
+value = 0.7
+
+[node name="button_start" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = 159.0
+offset_right = 100.0
+offset_bottom = 195.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Start Test Scene"

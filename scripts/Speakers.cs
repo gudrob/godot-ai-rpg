@@ -1,6 +1,6 @@
 ﻿
 public static class TextToSpeechSpeakers
 {
-	public const string Male = "007";
-    public const string Female = "014";
+	public const string Male = "002";
+    public const string Female = "002";
 }

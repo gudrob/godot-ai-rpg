@@ -119,6 +119,11 @@ public partial class TextToSpeech : Node
         tree = GetTree();
         StartServer();
         keepaliveStopwatch.Start();
+
+        /*for(var i = 0; i < 900; i++)
+        {
+            await Generate(string.Format("{0:000}", i), "Hello there. This a test to evaluate speaker quality.", false, "SAMPLE_" + i);
+        }*/
     }
 
     public override async void _Process(double delta)
@@ -175,7 +180,7 @@ public partial class TextToSpeech : Node
         ttsProcess.OutputDataReceived += processOutputDataReceived;
         ttsProcess.StartInfo.WorkingDirectory = backend;
         ttsProcess.StartInfo.FileName = backend + ttsPath;
-        ttsProcess.StartInfo.Arguments = "--model \"./libri_medium.onnx\" --output_dir \"./output\" --config \"./libri_medium.json\" --length_scale 1.33";
+        ttsProcess.StartInfo.Arguments = "--model \"./libri_medium.onnx\" --output_dir \"./output\" --config \"./libri_medium.json\" --length_scale 1.45";
 
 
         ttsProcess.Start();

@@ -1,9 +1,26 @@
-[gd_resource type="AudioBusLayout" load_steps=2 format=3 uid="uid://bf6srmdlar5gb"]
+[gd_resource type="AudioBusLayout" load_steps=4 format=3 uid="uid://bf6srmdlar5gb"]
+
+[sub_resource type="AudioEffectCompressor" id="AudioEffectCompressor_y11iw"]
+resource_name = "Compressor"
+ratio = 10.0
+gain = 1.0
+
+[sub_resource type="AudioEffectEQ21" id="AudioEffectEQ21_rxglw"]
+resource_name = "EQ21"
+band_db/5600_hz = -5.0
+band_db/8000_hz = -10.0
+band_db/11000_hz = -15.0
+band_db/16000_hz = -20.0
+band_db/22000_hz = -60.0
 
 [sub_resource type="AudioEffectRecord" id="AudioEffectRecord_ml18s"]
 resource_name = "Record"
 
 [resource]
+bus/0/effect/0/effect = SubResource("AudioEffectCompressor_y11iw")
+bus/0/effect/0/enabled = true
+bus/0/effect/1/effect = SubResource("AudioEffectEQ21_rxglw")
+bus/0/effect/1/enabled = false
 bus/1/name = &"Record"
 bus/1/solo = false
 bus/1/mute = true

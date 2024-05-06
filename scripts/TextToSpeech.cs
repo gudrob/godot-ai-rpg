@@ -61,7 +61,8 @@ public partial class TextToSpeech : Node
         {
             speechProcessing = true;
             Log($"Generating speech with speaker {speaker} and text {text}");
-            Directory.CreateDirectory(Path.Join(backend, "/output"));
+            var directoryPath = Path.Join(backend, "/output");
+            if(!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
 
             while (generationProcessedCounter < generation)
             {
@@ -93,15 +94,24 @@ public partial class TextToSpeech : Node
             audioFile = await RuntimeAudioLoader.LoadFile(outputFilePath);
             if (deleteAfterLoading)
             {
+                var deletePath = outputFilePath;
                 _ = Task.Run(() =>
                 {
-                    try { File.Delete(outputFilePath); } catch (Exception exception) { Log("Exception while deleting audio file: \n" + exception); }
+                    try { File.Delete(deletePath); } catch (Exception exception) { Log("Exception while deleting audio file: \n" + exception); }
                 });
             }
             else if (rename != null)
             {
                 if (!rename.EndsWith(".wav")) rename += ".wav";
-                File.Move(outputFilePath, Path.Join(Path.GetDirectoryName(outputFilePath), rename));
+                var movePath = outputFilePath;
+                _ = Task.Run(() =>
+                {
+                    try
+                    {
+                        File.Move(movePath, Path.Join(Path.GetDirectoryName(movePath), rename));
+                    }
+                    catch (Exception exception) { Log("Exception while deleting audio file: \n" + exception); }
+                });
             }
         }
         catch (Exception exception)
@@ -180,7 +190,7 @@ public partial class TextToSpeech : Node
         ttsProcess.OutputDataReceived += processOutputDataReceived;
         ttsProcess.StartInfo.WorkingDirectory = backend;
         ttsProcess.StartInfo.FileName = backend + ttsPath;
-        ttsProcess.StartInfo.Arguments = "--model \"./libri_medium.onnx\" --output_dir \"./output\" --config \"./libri_medium.json\" --length_scale 1.45";
+        ttsProcess.StartInfo.Arguments = "--model \"./../libri_medium.onnx\" --output_dir \"./output\" --config \"./../libri_medium.json\" --length_scale 1.45 --ipa-path \"./../ipa.data\"";
 
 
         ttsProcess.Start();

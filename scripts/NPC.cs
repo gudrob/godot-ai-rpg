@@ -145,6 +145,8 @@ public partial class NPC : CharacterBody3D
     /// <returns></returns>
     public bool Speak(AudioStream stream, bool highPriority, Action callback = null, float speechIntensity = 0.1f)
     {
+        if (stream == null) return false;
+
         var duration = (float)stream.GetLength();
 
         speechSpectrumValues = new float[10];

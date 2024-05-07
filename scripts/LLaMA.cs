@@ -203,12 +203,60 @@ namespace AIRPG
         {
             session.lastSentence.Append(chunk);
 
+            //Need to check for Numbers
+            if (session.parsingNumber)
+            {
+                if (session.parsingNumberDecimalDetected)
+                {
+                    if (chunk == ".")
+                    {
+                        //Second decimal point. It is probably a ellipsis or something, so we generate speech.
+                        hasEnded = true;
+                    }
+                    else if (!decimal.TryParse(chunk, out _))
+                    {
+                        session.parsingNumberDecimalDetected = false;
+                        session.parsingNumber = false;
+                        hasEnded = true;
+                    }
+                    else if (!hasEnded)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    if (chunk == ".")
+                    {
+                        session.parsingNumberDecimalDetected = true;
+                        if (!hasEnded) return;
+                    }
+                    else if (decimal.TryParse(chunk, out _))
+                    {
+                        if (!hasEnded) return;
+                    }
+                    else
+                    {
+                        session.parsingNumberDecimalDetected = false;
+                        session.parsingNumber = false;
+                    }
+                }
+            }
+            else if (decimal.TryParse(chunk, out _))
+            {
+                session.parsingNumber = true;
+                if (!hasEnded) return;
+            }
+
+
             if (chunk.IndexOfAny(sentenceTerminationTokens) != -1 || hasEnded)
             {
                 if (session.lastSentence.Length > 2)
                 {
                     try
                     {
+                        session.parsingNumber = false;
+                        session.parsingNumberDecimalDetected = false;
                         var thisSpeechIndex = speechIndex++;
                         var text = session.lastSentence.ToString().Trim();
                         if (text.Length == 0) return;
@@ -357,6 +405,8 @@ namespace AIRPG
         public string aiCharacterName;
         public string playerCharacterName;
         public StringBuilder lastSentence = new();
+        public bool parsingNumber = false;
+        public bool parsingNumberDecimalDetected = false;
     }
 
 }

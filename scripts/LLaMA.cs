@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Godot;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace AIRPG
 {
@@ -149,7 +150,6 @@ namespace AIRPG
                         if (res.Length == 0) continue;
 
                         Instance.TrackLineForTTS(session, res);
-                        Instance.AddToSessionPromptDelayed(session, res);
                     }
                     catch (Exception ex)
                     {
@@ -201,7 +201,9 @@ namespace AIRPG
 
         private async void TrackLineForTTS(Session session, string chunk, bool hasEnded = false)
         {
-            session.lastSentence.Append(chunk);
+            chunk = Regex.Replace(chunk, @"[^\u0000-\u007F]+", string.Empty);
+            AddToSessionPromptDelayed(session, chunk);
+            bool chunkAdded = false;
 
             //Need to check for Numbers
             if (session.parsingNumber)
@@ -221,6 +223,7 @@ namespace AIRPG
                     }
                     else if (!hasEnded)
                     {
+                        session.lastSentence.Append(chunk);
                         return;
                     }
                 }
@@ -229,11 +232,21 @@ namespace AIRPG
                     if (chunk == ".")
                     {
                         session.parsingNumberDecimalDetected = true;
-                        if (!hasEnded) return;
+                        chunkAdded = true;
+                        session.lastSentence.Append(chunk);
+                        if (!hasEnded)
+                        {
+                            return;
+                        }
                     }
                     else if (decimal.TryParse(chunk, out _))
                     {
-                        if (!hasEnded) return;
+                        chunkAdded = true;
+                        session.lastSentence.Append(chunk);
+                        if (!hasEnded) 
+                        {
+                            return;
+                        }
                     }
                     else
                     {
@@ -245,7 +258,17 @@ namespace AIRPG
             else if (decimal.TryParse(chunk, out _))
             {
                 session.parsingNumber = true;
-                if (!hasEnded) return;
+                chunkAdded = true;
+                session.lastSentence.Append(chunk);
+                if (!hasEnded)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                chunkAdded = true;
+                session.lastSentence.Append(chunk);
             }
 
 
@@ -259,8 +282,22 @@ namespace AIRPG
                         session.parsingNumberDecimalDetected = false;
                         var thisSpeechIndex = speechIndex++;
                         var text = session.lastSentence.ToString().Trim();
-                        if (text.Length == 0) return;
+                        if (text.Length == 0)
+                        {
+                            if (!chunkAdded)
+                            {
+                                session.lastSentence.Append(chunk);
+                            }
+                            return;
+                        }
                         session.lastSentence.Clear();
+
+                        if (!chunkAdded)
+                        {
+                            chunkAdded = true;
+                            session.lastSentence.Append(chunk);
+                        }
+
                         var output = await TextToSpeech.Generate(TextToSpeechSpeakers.Female, text);
 
                         while (character.IsSpeaking() || speechCounterIndex < thisSpeechIndex)
@@ -279,6 +316,11 @@ namespace AIRPG
                 {
                     session.lastSentence.Clear();
                 }
+            }
+
+            if (!chunkAdded)
+            {
+                session.lastSentence.Append(chunk);
             }
         }
 
@@ -300,7 +342,7 @@ namespace AIRPG
         }
 
 
-        public static void Initialize(int gpuLayers = 33, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = false, LLaMAVersion version = LLaMAVersion.Version2)
+        public static void Initialize(int gpuLayers = 23, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = false, LLaMAVersion version = LLaMAVersion.Version2)
         {
             Instance.StartServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory, version);
         }
@@ -329,7 +371,7 @@ namespace AIRPG
 
             var architecture = RuntimeInformation.ProcessArchitecture;
 
-            string modelPath = "./../../model/model.gguf";
+            string modelPath = "./../../llama/model/WizardLM2-7B-High.gguf";
             string backend = SelectBackend(architecture);
 
             if (backend == UNSUPPORTED_BACKEND)

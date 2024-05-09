@@ -10,15 +10,10 @@ using Vosk;
 public partial class SpeechRecognizer : Node
 {
 
-    [Export(PropertyHint.Dir, "The VOSK model folder")]
-    string modelPath = "res://models/en_us_small";
-    [Export(PropertyHint.None, "The name of the bus that contains the record effect")]
+    string modelPath = "res://vosk/en_medium";
     string recordBusName = "Record";
-    [Export(PropertyHint.None, "Stop recognition after x milliseconds")]
     long timeoutInMS = 10000;
-    [Export(PropertyHint.None, "Stop recognition if there is no change in output for x milliseconds.")]
-    long noChangeTimeoutInMS = 1500;
-    [Export(PropertyHint.None, "Don't stop recongizer until timeout.")]
+    long noChangeTimeoutInMS = 1900;
     bool continuousRecognition = false;
     [Signal]
     public delegate void OnPartialResultEventHandler(string partialResults);
@@ -33,7 +28,7 @@ public partial class SpeechRecognizer : Node
     private ulong recordTimeStart;
     private ulong noChangeTimeOutStart;
     private CancellationTokenSource cancelToken;
-    private int processIntervalMs = 150;
+    private int processIntervalMs = 100;
     private VoskRecognizer recognizer;
 
     public override void _Ready()
@@ -120,12 +115,21 @@ public partial class SpeechRecognizer : Node
     {
         if (_microphoneRecord != null && _microphoneRecord.IsRecordingActive())
         {
-            var recordedSample = _microphoneRecord.GetRecording();
+            AudioStreamWav recordedSample = null;
+            try
+            {
+                recordedSample = _microphoneRecord.GetRecording();
+            }catch (Exception ex)
+            {
+                GD.Print(ex);
+            }
             if (recordedSample == null) return;
 
             Game.SetProcessingInfo("Processing Speech");
 
+           
             recognizer ??= new(model, recordedSample.MixRate);
+            recognizer.SetPartialWords(true);
             GD.Print("Stereo: " + recordedSample.Stereo);
             byte[] data = recordedSample.Stereo ? MixStereoToMono(recordedSample.Data) : recordedSample.Data;
             if (!recognizer.AcceptWaveform(data, data.Length))

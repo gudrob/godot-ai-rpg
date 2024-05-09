@@ -106,6 +106,8 @@ public partial class SettingsUI : Control
         public float PhonemeLength { get; set; }
         public float Temperature { get; set; }
         public float TextDelay { get; set; }
+        public string LLM { get; set; }
+        public string Vosk { get; set; }
     }
 
 

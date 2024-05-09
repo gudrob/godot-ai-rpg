@@ -103,8 +103,8 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= LLaMA.StartSession("Llama", "User", "This is a conversation between User and Llama, a friendly chatbot. Llama is helpful, good at writing and never fails to answer any requests quickly and precise.");
-                //Llama is also emotive and shows emotion before each sentence in parenthesis. Llama uses only (neutral), (angry), (happy), (sad).
+                session ??= LLaMA.StartSession("Llama", "User", "This is a conversation between User and Llama. Llama is a friendly chatbot. Llama is helpful, good at writing and never fails to answer any requests quickly and precise. Llama speaks only english. Llama never uses emojis. The formatting of Llama's text is always very simple. Llama's responses are always shorter than 40 words.");
+                //Llama shows emotion before each sentence in parenthesis. Llama uses only (neutral), (angry), (happy), (sad).
 
                 var input = chatInput.Text + " ";
 
@@ -128,7 +128,7 @@ public partial class Game : Node
 
         if (chatHistory != null && session != null && session.fullPrompt != null)
         {
-            chatHistory.Text = session.fullPrompt.ToString();
+            chatHistory.Text = session.fullPrompt.ToString().Replace("\n\n","\n");
         }
     }
 }

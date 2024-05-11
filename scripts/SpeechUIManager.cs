@@ -1,6 +1,4 @@
 using Godot;
-using System;
-using System.Text.Json;
 
 public partial class SpeechUIManager : Node
 {
@@ -9,56 +7,30 @@ public partial class SpeechUIManager : Node
     [Export] SpeechRecognizer speechRecognizer;
     [Export] CheckBox speechAutosend;
 
-    private string partialResult;
-    private string finalResult;
+    private string sttResult;
 
     public override void _Ready()
     {
         speechStartButton.Pressed += () =>
         {
-            if (!speechRecognizer.isCurrentlyListening())
+            if (!speechRecognizer.Active)
             {
-                speechResult.Text = "";
+                Game.Instance.SetText(speechResult.Text = "");
                 OnStartSpeechRecognition();
                 speechRecognizer.StartSpeechRecognition();
             }
             else
             {
                 OnStopSpeechRecognition();
-                finalResult = speechRecognizer.StopSpeechRecoginition();
+                speechRecognizer.StopSpeechRecoginition();
             }
         };
 
-        speechRecognizer.OnPartialResult += (result) =>
+        speechRecognizer.OnResult += (result) =>
         {
-            Parse(result, "partial");
+            Game.Instance.SetText(speechResult.Text = result);
+            if (speechAutosend.ButtonPressed && Game.Instance.GetText().Length > 1) Game.Instance.ForceSend();
         };
-
-        speechRecognizer.OnFinalResult += (result) =>
-        {
-            var text = Parse(result, "text");
-            Game.Instance.SetText(text);
-            OnStopSpeechRecognition();
-            if (speechAutosend.ButtonPressed) Game.Instance.ForceSend();
-
-        };
-    }
-
-    public string Parse(string json, string key)
-    {
-        var text = speechResult.Text;
-        try
-        {
-            var responseDict = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(json);
-            var res = responseDict[key].ToString();
-            if (res.Length > 0) text = res;
-        }
-        catch (Exception ex)
-        {
-            GD.Print(ex);
-        }
-        speechResult.Text = text;
-        return text;
     }
 
     private void OnStopSpeechRecognition()

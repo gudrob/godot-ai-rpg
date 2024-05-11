@@ -1,75 +1,28 @@
 using Godot;
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Vosk;
 
 public partial class SpeechRecognizer : Node
 {
 
-    string modelPath = "res://vosk/en_medium";
     string recordBusName = "Record";
-    long timeoutInMS = 10000;
-    long noChangeTimeoutInMS = 1900;
-    bool continuousRecognition = false;
     [Signal]
-    public delegate void OnPartialResultEventHandler(string partialResults);
-    [Signal]
-    public delegate void OnFinalResultEventHandler(string finalResults);
+    public delegate void OnResultEventHandler(string partialResults);
     private int recordBusIdx;
-    private AudioEffectRecord _microphoneRecord;  // The microphone recording bus effect
-    private bool isListening = false;
-    private Model model;
-    private string partialResult;
-    private string finalResult;
-    private ulong recordTimeStart;
-    private ulong noChangeTimeOutStart;
-    private CancellationTokenSource cancelToken;
-    private int processIntervalMs = 100;
-    private VoskRecognizer recognizer;
+    private AudioEffectRecord _microphoneRecord;
+    private GodotObject recognizer;
+    public bool Active { get; private set; } = false;
 
     public override void _Ready()
     {
-        IntializeOSSpecificLibs(); //Doesn't seem to automatically load these libs
+        //IntializeOSSpecificLibs(); //Doesn't seem to automatically load these libs
         recordBusIdx = AudioServer.GetBusIndex(recordBusName);
         _microphoneRecord = AudioServer.GetBusEffect(recordBusIdx, 0) as AudioEffectRecord;
-        model = new Model(ProjectSettings.GlobalizePath(modelPath));
-        Vosk.Vosk.SetLogLevel(0);
-        cancelToken = new CancellationTokenSource();
+        recognizer = FindChild("speech_recognizer");
         DebugPrint("Initialized Speech Recognition");
-    }
-
-    private static void IntializeOSSpecificLibs()
-    {
-        switch (OS.GetName())
-        {
-            case "Windows":
-            case "UWP":
-                NativeLibrary.Load(Path.Join(AppContext.BaseDirectory, "libvosk.dll"));
-                break;
-            case "macOS":
-                NativeLibrary.Load(Path.Join(AppContext.BaseDirectory, "libvosk.dylib"));
-                break;
-            case "Linux":
-            case "FreeBSD":
-            case "NetBSD":
-            case "OpenBSD":
-            case "BSD":
-                NativeLibrary.Load(Path.Join(AppContext.BaseDirectory, "libvosk.so"));
-                break;
-            case "Android":
-                NativeLibrary.Load(Path.Join(AppContext.BaseDirectory, "libvosk.so"));
-                break;
-            case "iOS":
-                GD.PrintErr("No IOS Support");
-                break;
-            case "Web":
-                GD.PrintErr("No Web Support");
-                break;
-        }
     }
 
     private static void DebugPrint(string debugString)
@@ -78,37 +31,6 @@ public partial class SpeechRecognizer : Node
         {
             GD.Print(debugString);
         }
-    }
-
-    private void StartContinuousSpeechRecognition()
-    {
-        ThreadPool.QueueUserWorkItem(async (_) =>
-        {
-            while (!cancelToken.IsCancellationRequested)
-            {
-                try
-                {
-                    await Task.Delay(processIntervalMs, cancelToken.Token);
-                    var sw = Stopwatch.StartNew();
-                    ProcessMicrophone();
-                    ulong currentTime = Time.GetTicksMsec();
-                    if (!continuousRecognition && isListening && (currentTime - noChangeTimeOutStart) > (ulong)noChangeTimeoutInMS)
-                    {
-                        StopSpeechRecoginition();
-                    }
-                    else if (isListening && (currentTime - recordTimeStart) >= (ulong)timeoutInMS)
-                    {
-                        DebugPrint("Stopping from Timeout");
-                        StopSpeechRecoginition();
-                    }
-                    Log($"Processing time for partial result: {sw.Elapsed.TotalMilliseconds} ms");
-                }
-                catch (Exception ex)
-                {
-                    Log("Exception occured: " + ex);
-                }
-            }
-        });
     }
 
     private void ProcessMicrophone()
@@ -127,67 +49,110 @@ public partial class SpeechRecognizer : Node
 
             Game.SetProcessingInfo("Processing Speech");
 
-           
-            recognizer ??= new(model, recordedSample.MixRate);
-            recognizer.SetPartialWords(true);
-            GD.Print("Stereo: " + recordedSample.Stereo);
+
+            var sw = Stopwatch.StartNew();
             byte[] data = recordedSample.Stereo ? MixStereoToMono(recordedSample.Data) : recordedSample.Data;
-            if (!recognizer.AcceptWaveform(data, data.Length))
+            Log($"Stereo to mono mix: "+sw.Elapsed.TotalMilliseconds);
+
+            sw.Restart();
+            var floatData = new float[data.Length / 2];
+
+            for (int i = 0; i < floatData.Length; i++)
             {
-                string currentPartialResult = recognizer.PartialResult();
-                if (partialResult == null || !currentPartialResult.Equals(partialResult))
-                {
-                    partialResult = currentPartialResult;
-                    noChangeTimeOutStart = Time.GetTicksMsec();
-                    CallDeferred("emit_signal", "OnPartialResult", partialResult);
-                }
-                EndRecognition(recognizer);
+                floatData[i] = BitConverter.ToInt16(data, i * 2) / 32767.0f;
             }
-            else if (!continuousRecognition) // Completed recognition
-            {
-                EndRecognition(recognizer);
-                StopSpeechRecoginition();
-            }
+            Log($"16 Bit to 32 Bit PCM: " + sw.Elapsed.TotalMilliseconds);
+
+            sw.Restart();
+            var newFloatData = Resample(floatData, recordedSample.MixRate, 16000);
+            Log($"Resample "+recordedSample.MixRate+" to 16000 hz: " + sw.Elapsed.TotalMilliseconds);
+
+            var total_time = newFloatData.Length / 16000f;
+            var audio_ctx = (int)(total_time * 1500 / 30 + 128);
+
+
+            sw.Restart();
+            var token = (Godot.Collections.Array<string>) recognizer.Call("transcribe", newFloatData, "", audio_ctx);
+            Log($"Recognizer: " + sw.Elapsed.TotalMilliseconds);
+
+            CallDeferred("emit_signal", "OnResult", token.First());
         }
     }
 
-    private void EndRecognition(VoskRecognizer recognizer)
+    public static float[] Resample(float[] inputSamples, int inputSampleRate, int outputSampleRate)
     {
-        finalResult = recognizer.FinalResult();
-        recognizer.Reset();
+        int inputLength = inputSamples.Length;
+        int outputLength = (int)((double)inputLength / inputSampleRate * outputSampleRate);
+
+        float[] outputSamples = new float[outputLength];
+
+        double ratio = (double)inputSampleRate / outputSampleRate;
+        double position = 0;
+
+        for (int i = 0; i < outputLength; i++)
+        {
+            int leftSampleIndex = (int)position;
+            int rightSampleIndex = leftSampleIndex + 1;
+
+            if (rightSampleIndex < inputLength)
+            {
+                double fraction = position - leftSampleIndex;
+                outputSamples[i] = (float)(inputSamples[leftSampleIndex] * (1 - fraction) + inputSamples[rightSampleIndex] * fraction);
+            }
+            else
+            {
+                outputSamples[i] = inputSamples[leftSampleIndex];
+            }
+
+            position += ratio;
+        }
+
+        return outputSamples;
     }
 
     public void StartSpeechRecognition()
     {
-        if (cancelToken != null && !cancelToken.IsCancellationRequested)
-        {
-            cancelToken.Cancel();
-        }
-        cancelToken = new CancellationTokenSource();
-        partialResult = "";
-        finalResult = "";
-        recordTimeStart = Time.GetTicksMsec();
-        noChangeTimeOutStart = Time.GetTicksMsec();
-        isListening = true;
+        Active = true;
         if (!_microphoneRecord.IsRecordingActive())
         {
             _microphoneRecord.SetRecordingActive(true);
         }
-        StartContinuousSpeechRecognition();
     }
 
-    public string StopSpeechRecoginition()
+    public async Task ProcessSpeech()
     {
-        isListening = false;
-        cancelToken.Cancel();
+        bool completed = false;
+
+        ThreadPool.QueueUserWorkItem((_) =>
+        {
+            try
+            {
+                ProcessMicrophone();
+            }catch (Exception ex)
+            {
+                GD.Print(ex);
+            }
+            finally
+            {
+                completed = true;
+            }
+        });
+
+        while (!completed)
+        {
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        }
+    }
+
+    public async void StopSpeechRecoginition()
+    {
+        await ProcessSpeech();
+        Active = false;
         if (_microphoneRecord.IsRecordingActive())
         {
             _microphoneRecord.SetRecordingActive(false);
-            CallDeferred("emit_signal", "OnFinalResult", finalResult);
         }
-
         Game.SetProcessingInfo("Speech processed", false);
-        return finalResult;
     }
 
     private byte[] MixStereoToMono(byte[] input)
@@ -225,15 +190,9 @@ public partial class SpeechRecognizer : Node
     {
         if (what == NotificationWMCloseRequest)
         {
-            model.Dispose();
             GetTree().Quit(); // default behavior
         }
 
-    }
-
-    public bool isCurrentlyListening()
-    {
-        return isListening;
     }
 
     static void Log(string info)

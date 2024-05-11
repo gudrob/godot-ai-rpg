@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://s86py3x3v5vd"]
+[gd_scene load_steps=18 format=3 uid="uid://s86py3x3v5vd"]
 
 [ext_resource type="Script" path="res://scripts/LLaMA.cs" id="1_0pdge"]
 [ext_resource type="Script" path="res://scripts/Game.cs" id="2_5ulk5"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/SpeechRecognizer.cs" id="4_k56in"]
 [ext_resource type="Script" path="res://scripts/TextToSpeech.cs" id="5_hht3w"]
 [ext_resource type="PackedScene" uid="uid://b5p7aa8uvbsm0" path="res://scenes/npc.tscn" id="6_8d3ht"]
+[ext_resource type="WhisperResource" path="res://addons/godot_whisper/models/gglm-tiny.en.bin" id="7_aqj6w"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lvya5"]
 texture = ExtResource("3_ltst5")
@@ -125,7 +126,7 @@ grow_vertical = 2
 script = ExtResource("3_lrev8")
 speechStartButton = NodePath("speech_controls/speech_button")
 speechResult = NodePath("speech_controls/speech_result")
-speechRecognizer = NodePath("speech_recognizer")
+speechRecognizer = NodePath("speech_recognizer_script")
 speechAutosend = NodePath("speech_controls/speech_autosend")
 
 [node name="microphone_stream" type="AudioStreamPlayer" parent="game/speech"]
@@ -133,8 +134,11 @@ stream = SubResource("AudioStreamMicrophone_qiane")
 autoplay = true
 bus = &"Record"
 
-[node name="speech_recognizer" type="Node" parent="game/speech"]
+[node name="speech_recognizer_script" type="Node" parent="game/speech"]
 script = ExtResource("4_k56in")
+
+[node name="speech_recognizer" type="SpeechToText" parent="game/speech/speech_recognizer_script"]
+language_model = ExtResource("7_aqj6w")
 
 [node name="speech_player" type="AudioStreamPlayer" parent="game/speech"]
 

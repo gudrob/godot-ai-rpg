@@ -42,6 +42,11 @@ public partial class Game : Node
         chatInput.Text = text;
     }
 
+    public string GetText()
+    {
+        return chatInput.Text;
+    }
+
     public void ForceSend()
     {
         forceSend = true;

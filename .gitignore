@@ -33,5 +33,9 @@ Godot-ai-rpg.csproj.ol*
 tts/win-x64/output/
 tts/libri_high.onnx
 tts/macos-arm64/output/
+addons/godot_whisper/models/whisper_low.bin
+addons/godot_whisper/models/whisper_medium.bin
+addons/godot_whisper/models/whisper_high.bin
+
 
 settings.json

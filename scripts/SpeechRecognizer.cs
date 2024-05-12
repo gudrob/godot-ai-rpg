@@ -47,7 +47,7 @@ public partial class SpeechRecognizer : Node
             }
             if (recordedSample == null) return;
 
-            Game.SetProcessingInfo("Processing Speech");
+            Game.SetProcessingInfo("Recording Speech");
 
 
             var sw = Stopwatch.StartNew();
@@ -122,6 +122,7 @@ public partial class SpeechRecognizer : Node
     public async Task ProcessSpeech()
     {
         bool completed = false;
+        Game.SetProcessingInfo("Interpreting speech", true);
 
         ThreadPool.QueueUserWorkItem((_) =>
         {
@@ -174,8 +175,6 @@ public partial class SpeechRecognizer : Node
                 output[outputIndex++] = outSample[0];
                 output[outputIndex++] = outSample[1];
             }
-
-            Log($"Stereo to mono mixing time: {sw.Elapsed.TotalMilliseconds}ms");
 
             return output;
         }

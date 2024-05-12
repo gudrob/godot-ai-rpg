@@ -30,7 +30,7 @@ namespace AIRPG
         LLaMAVersion version = LLaMAVersion.Version2;
 
 
-        public static async Task Generate(Session session, string text, int predictTokens = 160, float repeatPenalty = 1.18f, float temperature = 0.6f)
+        public static async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 0.4f)
         {
             Game.SetProcessingInfo("Preparing Prompt");
 
@@ -72,7 +72,7 @@ namespace AIRPG
                 + $"\"stream\": true,"
                 + $"\"temperature\": {temperature},"
                 + $"\"tfs_z\": 1,"
-                + $"\"top_k\": 15,"
+                + $"\"top_k\": 40,"
                 + $"\"top_p\": 0.5,"
                 + $"\"typical_p\": 1"
                 + "}";
@@ -342,7 +342,7 @@ namespace AIRPG
         }
 
 
-        public static void Initialize(int gpuLayers = 23, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = false, LLaMAVersion version = LLaMAVersion.Version2)
+        public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 4096, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = false, LLaMAVersion version = LLaMAVersion.Version2)
         {
             Instance.StartServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory, version);
         }
@@ -371,7 +371,7 @@ namespace AIRPG
 
             var architecture = RuntimeInformation.ProcessArchitecture;
 
-            string modelPath = "./../../llama/model/WizardLM2-7B-High.gguf";
+            string modelPath = "./../../llama/model/WizardLM-Medium.gguf";
             string backend = SelectBackend(architecture);
 
             if (backend == UNSUPPORTED_BACKEND)

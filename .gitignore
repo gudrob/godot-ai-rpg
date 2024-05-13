@@ -24,7 +24,9 @@ llama/model/*
 
 Godot-ai-rpg.csproj.ol*
 
+.DS_Store
 *DS_Store*
+*S_Stor*
 
 *csproj.old*
 

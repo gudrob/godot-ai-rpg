@@ -1,0 +1,16 @@
+[gd_resource type="StandardMaterial3D" load_steps=3 format=3 uid="uid://dx1hiufdeujjt"]
+
+[ext_resource type="Texture2D" uid="uid://du8xcxk17e6gg" path="res://assets/textures/body/female_young.png" id="1_m6bg1"]
+[ext_resource type="Texture2D" uid="uid://b5vlqqep0l5j2" path="res://assets/textures/body/skin_normal.png" id="2_ieuck"]
+
+[resource]
+albedo_texture = ExtResource("1_m6bg1")
+metallic = 0.02
+metallic_specular = 0.2
+roughness = 0.41
+normal_enabled = true
+normal_texture = ExtResource("2_ieuck")
+anisotropy_enabled = true
+subsurf_scatter_enabled = true
+subsurf_scatter_strength = 0.31
+subsurf_scatter_skin_mode = true

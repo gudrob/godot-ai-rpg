@@ -107,7 +107,7 @@ public partial class SettingsUI : Control
         public float Temperature { get; set; }
         public float TextDelay { get; set; }
         public string LLM { get; set; }
-        public string Vosk { get; set; }
+        public string TTS { get; set; }
     }
 
 

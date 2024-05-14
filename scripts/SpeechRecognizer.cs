@@ -18,7 +18,6 @@ public partial class SpeechRecognizer : Node
 
     public override void _Ready()
     {
-        //IntializeOSSpecificLibs(); //Doesn't seem to automatically load these libs
         recordBusIdx = AudioServer.GetBusIndex(recordBusName);
         _microphoneRecord = AudioServer.GetBusEffect(recordBusIdx, 0) as AudioEffectRecord;
         recognizer = FindChild("speech_recognizer");
@@ -41,7 +40,8 @@ public partial class SpeechRecognizer : Node
             try
             {
                 recordedSample = _microphoneRecord.GetRecording();
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 GD.Print(ex);
             }
@@ -52,7 +52,7 @@ public partial class SpeechRecognizer : Node
 
             var sw = Stopwatch.StartNew();
             byte[] data = recordedSample.Stereo ? MixStereoToMono(recordedSample.Data) : recordedSample.Data;
-            Log($"Stereo to mono mix: "+sw.Elapsed.TotalMilliseconds);
+            Log($"Stereo to mono mix: " + sw.Elapsed.TotalMilliseconds);
 
             sw.Restart();
             var floatData = new float[data.Length / 2];
@@ -65,14 +65,14 @@ public partial class SpeechRecognizer : Node
 
             sw.Restart();
             var newFloatData = Resample(floatData, recordedSample.MixRate, 16000);
-            Log($"Resample "+recordedSample.MixRate+" to 16000 hz: " + sw.Elapsed.TotalMilliseconds);
+            Log($"Resample " + recordedSample.MixRate + " to 16000 hz: " + sw.Elapsed.TotalMilliseconds);
 
             var total_time = newFloatData.Length / 16000f;
             var audio_ctx = (int)(total_time * 1500 / 30 + 128);
 
 
             sw.Restart();
-            var token = (Godot.Collections.Array<string>) recognizer.Call("transcribe", newFloatData, "", audio_ctx);
+            var token = (Godot.Collections.Array<string>)recognizer.Call("transcribe", newFloatData, "", audio_ctx);
             Log($"Recognizer: " + sw.Elapsed.TotalMilliseconds);
 
             CallDeferred("emit_signal", "OnResult", token.First());
@@ -129,7 +129,8 @@ public partial class SpeechRecognizer : Node
             try
             {
                 ProcessMicrophone();
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 GD.Print(ex);
             }

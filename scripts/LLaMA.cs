@@ -342,7 +342,7 @@ namespace AIRPG
 		}
 
 
-		public static void Initialize(int gpuLayers = 33, int cpuThreads = 3, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 4096, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = false, LLaMAVersion version = LLaMAVersion.Version2)
+		public static void Initialize(int gpuLayers = 33, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = false, LLaMAVersion version = LLaMAVersion.Version2)
 		{
 			Instance.StartServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory, version);
 		}
@@ -371,7 +371,7 @@ namespace AIRPG
 
 			var architecture = RuntimeInformation.ProcessArchitecture;
 
-			string modelPath = "./../../llama/model/WizardLM-Medium.gguf";
+			string modelPath = "./../../llama/model/model.gguf";
 			string backend = SelectBackend(architecture);
 
 			if (backend == UNSUPPORTED_BACKEND)
@@ -390,7 +390,7 @@ namespace AIRPG
 			LLaMAProcess.StartInfo.RedirectStandardOutput = true;
 			LLaMAProcess.StartInfo.WorkingDirectory = backend;
 			LLaMAProcess.StartInfo.FileName = backend + "server";
-			LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --log-format text --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "" : "--no-mmap")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
+			LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --log-format text --cache-type-k q4_1 --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "" : "--no-mmap")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
 			LLaMAProcess.Exited += processExited;
 			LLaMAProcess.ErrorDataReceived += processErrorDataReceived;
 			LLaMAProcess.OutputDataReceived += processOutputDataReceived;

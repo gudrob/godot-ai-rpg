@@ -12,10 +12,11 @@ The general workflow and tools for interaction with NPCS are intended to be the 
 Currently MacOS ARM64 and Windows X64. \
 For GPU acelleration LLaMA.cpp was compiled with Vulkan for win-x64 and Metal for macos-arm64. \
 
-### LLaMA Models
-https://huggingface.co/TheBloke/WizardLM-7B-uncensored-GGUF
+### LLaMA.cpp compatible Models
+https://huggingface.co/TheBloke/WizardLM-7B-uncensored-GGUF \
 WizardLM-7B-uncensored.Q4_K_M.gguf has proven to work on both Windows and MacOS for this project. \
 This model is licensed under Apache 2.0 and this specific training dataset is CC-BY.
+Disclaimer (04.08.2024): In case you want to use this project as a base for your game, I would recommend you switch to LLaMA 3.1 or Gemma 2 9B as they yield far superior results to the "old" WizardLM. Especially Instruct-tuned models adhere to prompts in a way that is needed for proper control over generation.
 
 ### Installation
 

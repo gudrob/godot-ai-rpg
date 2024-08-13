@@ -134,9 +134,9 @@ public partial class Game : Node
         {
             chatHistory.Text = session.fullPrompt.ToString().Replace("\n\n", "\n")
             .Replace("<|beginning_of_text|>", "")
-            .Replace("<|start_header_id|>system\n<|end_header_id|>", "System Prompt:\n")
-            .Replace("<|start_header_id|>user\n<|end_header_id|>", "User:\n")
-            .Replace("<|start_header_id|>assistant\n<|end_header_id|>", "Llama:\n")
+            .Replace("<|start_header_id|>system<|end_header_id|>\n", "System Prompt:\n")
+            .Replace("<|start_header_id|>user<|end_header_id|>\n", "User:\n")
+            .Replace("<|start_header_id|>assistant<|end_header_id|>\n", "Llama:\n")
             .Replace("<|start_header_id|>", "")
             .Replace("<|end_header_id|>", "")
             .Replace("<|eot_id|>", "");

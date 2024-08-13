@@ -32,7 +32,7 @@ namespace AIRPG
 
 		private static int seed = (int)(GD.Randi() / 2);
 
-		public static async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 0.75f)
+		public static async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 1f)
 		{
 			Game.SetProcessingInfo("Preparing Prompt");
 
@@ -62,8 +62,9 @@ namespace AIRPG
 			+ $"\"stream\": true,"
 			+ $"\"temperature\": {temperature},"
 			+ $"\"tfs_z\": 1,"
-			+ $"\"top_k\": 40,"
+			+ $"\"top_k\": 45,"
 			+ $"\"top_p\": 0.5,"
+			+ $"\"min_p\": 0.01,"
 			+ $"\"seed\": " + seed
 			+ "}";
 

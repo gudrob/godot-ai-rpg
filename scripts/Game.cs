@@ -108,7 +108,7 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= LLaMA.StartSession("Llama", "User", "You are Llama, a friendly chatbot. You are helpful, good at writing and never fail to answer any requests quickly and precise. You speak only english. You never use emojis. The formatting of your text is always very simple. Your respomses must never exceed 50 words. Every subordinate clause must be shorter than 10 words. ");
+                session ??= LLaMA.StartSession("You are Llama, a friendly chatbot. You are helpful, good at writing and never fail to answer any requests quickly and precise. You speak only english. You never use emojis. The formatting of your text is always very simple. Your respomses must never exceed 50 words. Every subordinate clause must be shorter than 10 words. ");
 
                 var input = chatInput.Text + " ";
 

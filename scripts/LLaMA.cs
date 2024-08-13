@@ -30,13 +30,15 @@ namespace AIRPG
 		[Export]
 		public LineEdit speakerInput;
 
+		private static int seed = (int)(GD.Randi() / 2);
+
 		public static async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 0.75f)
 		{
 			Game.SetProcessingInfo("Preparing Prompt");
 
 			if (!session.fullPrompt.ToString().EndsWith("\n")) session.fullPrompt.Append("\n");
 
-			session.fullPrompt.Append("<|start_header_id|>user\n<|end_header_id|>" + text + "<|eot_id|>\n<|start_header_id|>assistant\n<|end_header_id|>");
+			session.fullPrompt.Append("<|start_header_id|>user<|end_header_id|>\n" + text + "<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n");
 
 			string body;
 
@@ -61,7 +63,8 @@ namespace AIRPG
 			+ $"\"temperature\": {temperature},"
 			+ $"\"tfs_z\": 1,"
 			+ $"\"top_k\": 40,"
-			+ $"\"top_p\": 0.5"
+			+ $"\"top_p\": 0.5,"
+			+ $"\"seed\": " + seed
 			+ "}";
 
 			Log(body);
@@ -126,11 +129,11 @@ namespace AIRPG
 			Game.SetProcessingInfo("AI Response finished", false);
 		}
 
-		public static Session StartSession(string aiCharacterName, string playerCharacterName, string basePrompt)
+		public static Session StartSession(string basePrompt)
 		{
 			return new Session()
 			{
-				fullPrompt = new("<|beginning_of_text|><|start_header_id|>system\n<|end_header_id|>" + basePrompt + "<|eot_id|>")
+				fullPrompt = new("<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n" + basePrompt + "<|eot_id|>")
 			};
 		}
 

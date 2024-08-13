@@ -27,6 +27,9 @@ namespace AIRPG
 
 		const string UNSUPPORTED_BACKEND = "none";
 
+		[Export]
+		public LineEdit speakerInput;
+
 		public static async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 0.75f)
 		{
 			Game.SetProcessingInfo("Preparing Prompt");
@@ -242,7 +245,7 @@ namespace AIRPG
 							session.lastSentence.Append(chunk);
 						}
 
-						var output = await TextToSpeech.Generate(TextToSpeechSpeakers.Female, text);
+						var output = await TextToSpeech.Generate(speakerInput.Text, text);
 
 						while (character.IsSpeaking() || speechCounterIndex < thisSpeechIndex)
 						{

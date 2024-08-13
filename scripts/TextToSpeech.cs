@@ -82,12 +82,12 @@ public partial class TextToSpeech : Node
     private static partial void DiscardVoiceData(IntPtr data);
 
 
-    public static async Task<AudioStreamWav> Generate(string speaker, string text, bool deleteAfterLoading = true, string rename = null)
+    public static async Task<AudioStreamWav> Generate(string speaker, string text)
     {
-        return await instance._Generate(speaker, text, deleteAfterLoading, rename);
+        return await instance._Generate(speaker, text);
     }
 
-    private async Task<AudioStreamWav> _Generate(string speaker, string text, bool deleteAfterLoading = true, string rename = null)
+    private async Task<AudioStreamWav> _Generate(string speaker, string text)
     {
         Log($"Preparing speech with speaker {speaker} and text {text}");
 
@@ -108,15 +108,18 @@ public partial class TextToSpeech : Node
         }
 
         speechProcessing = true;
-        Log($"Generating speech with speaker {speaker} and text {text}");
 
-        int.TryParse(text, out var res);
+        int.TryParse(speaker, out var res);
+
+        res = Mathf.Clamp(res, 0, 903);
+
+        Log($"Generating speech with speaker {res} and text {text}");
 
         ThreadPool.QueueUserWorkItem((_) =>
         {
             try
             {
-                ApplySynthesisConfig(1.3f, 0.3f, 0.6f, res, 0.4f, 0.1f, allowCuda);
+                ApplySynthesisConfig(1.3f, 0.33f, 0.66f, res, 0.4f, 0.1f, allowCuda);
                 var data = GenerateVoiceData(out var dataLength, text);
                 byte[] byteData = new byte[dataLength];
                 Marshal.Copy(data, byteData, 0, dataLength);

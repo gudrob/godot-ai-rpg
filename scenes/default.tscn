@@ -46,9 +46,10 @@ adjustment_saturation = 1.08
 
 [node name="root" type="Node3D"]
 
-[node name="llama" type="Node" parent="." node_paths=PackedStringArray("character")]
+[node name="llama" type="Node" parent="." node_paths=PackedStringArray("character", "speakerInput")]
 script = ExtResource("1_0pdge")
 character = NodePath("../npc")
+speakerInput = NodePath("../game/chat/speaker_input")
 
 [node name="game" type="Control" parent="."]
 layout_mode = 3
@@ -88,6 +89,12 @@ offset_top = 539.0
 offset_right = 1136.0
 offset_bottom = 639.0
 
+[node name="processing_panel2" type="Panel" parent="game/chat"]
+offset_left = 899.0
+offset_top = 456.0
+offset_right = 1136.0
+offset_bottom = 491.0
+
 [node name="processing_panel" type="Panel" parent="game/chat"]
 layout_mode = 0
 offset_left = 19.0
@@ -106,12 +113,33 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
+[node name="processing_text" type="Label" parent="game/chat/processing_panel/processing_text"]
+offset_left = 880.0
+offset_top = -40.0
+offset_right = 989.0
+offset_bottom = -9.0
+text = "Speaker:"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="speaker_input" type="LineEdit" parent="game/chat"]
+offset_left = 996.0
+offset_top = 458.0
+offset_right = 1133.0
+offset_bottom = 487.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_juw8d")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_aj0wa")
+theme_override_styles/read_only = SubResource("StyleBoxEmpty_n0562")
+text = "9"
+alignment = 1
+
 [node name="chat_input" type="LineEdit" parent="game/chat"]
 layout_mode = 2
-offset_left = 575.0
+offset_left = 572.0
 offset_top = 574.0
-offset_right = 1129.0
-offset_bottom = 633.0
+offset_right = 1132.0
+offset_bottom = 634.0
 theme_override_styles/normal = SubResource("StyleBoxEmpty_juw8d")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_aj0wa")
 theme_override_styles/read_only = SubResource("StyleBoxEmpty_n0562")

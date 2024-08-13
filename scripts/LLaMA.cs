@@ -27,7 +27,7 @@ namespace AIRPG
 
 		const string UNSUPPORTED_BACKEND = "none";
 
-		public static async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 0.4f)
+		public static async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 0.75f)
 		{
 			Game.SetProcessingInfo("Preparing Prompt");
 
@@ -57,9 +57,8 @@ namespace AIRPG
 			+ $"\"stream\": true,"
 			+ $"\"temperature\": {temperature},"
 			+ $"\"tfs_z\": 1,"
-			+ $"\"top_k\": 15,"
-			+ $"\"top_p\": 0.5,"
-			+ $"\"typical_p\": 1"
+			+ $"\"top_k\": 40,"
+			+ $"\"top_p\": 0.5"
 			+ "}";
 
 			Log(body);
@@ -333,7 +332,7 @@ namespace AIRPG
 			LLaMAProcess.StartInfo.RedirectStandardOutput = true;
 			LLaMAProcess.StartInfo.WorkingDirectory = backend;
 			LLaMAProcess.StartInfo.FileName = backend + "server";
-			LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --log-format text --flash-attn --cache-type-k q5_1 --cache-type-v q5_1 --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} {(allowMemoryMapping ? "" : "--no-mmap")} {(alwaysKeepInMemory ? "--mlock" : "")} --parallel {maximumSessions} ";
+			LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --log-format text --flash-attn --cache-type-k q5_1 --cache-type-v q5_1 --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} --parallel {maximumSessions} ";
 			LLaMAProcess.Exited += processExited;
 			LLaMAProcess.ErrorDataReceived += processErrorDataReceived;
 			LLaMAProcess.OutputDataReceived += processOutputDataReceived;

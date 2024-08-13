@@ -21,15 +21,7 @@ public partial class SpeechRecognizer : Node
         recordBusIdx = AudioServer.GetBusIndex(recordBusName);
         _microphoneRecord = AudioServer.GetBusEffect(recordBusIdx, 0) as AudioEffectRecord;
         recognizer = FindChild("speech_recognizer");
-        DebugPrint("Initialized Speech Recognition");
-    }
-
-    private static void DebugPrint(string debugString)
-    {
-        if (OS.IsDebugBuild())
-        {
-            GD.Print(debugString);
-        }
+        Log("Initialized Speech Recognition");
     }
 
     private void ProcessMicrophone()
@@ -75,7 +67,7 @@ public partial class SpeechRecognizer : Node
             var token = (Godot.Collections.Array<string>)recognizer.Call("transcribe", newFloatData, "", audio_ctx);
             Log($"Recognizer: " + sw.Elapsed.TotalMilliseconds);
 
-            CallDeferred("emit_signal", "OnResult", token.First());
+            if (token.Count > 0) CallDeferred("emit_signal", "OnResult", token.First());
         }
     }
 

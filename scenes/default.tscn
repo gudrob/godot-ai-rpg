@@ -8,7 +8,7 @@
 [ext_resource type="Script" path="res://scripts/SpeechRecognizer.cs" id="4_k56in"]
 [ext_resource type="Script" path="res://scripts/TextToSpeech.cs" id="5_hht3w"]
 [ext_resource type="PackedScene" uid="uid://b5p7aa8uvbsm0" path="res://scenes/npc.tscn" id="6_8d3ht"]
-[ext_resource type="WhisperResource" path="res://addons/godot_whisper/models/whisper_medium.bin" id="7_j148w"]
+[ext_resource type="WhisperResource" path="res://addons/godot_whisper/models/whisper_very_low.bin" id="7_a7f68"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lvya5"]
 texture = ExtResource("3_ltst5")
@@ -138,7 +138,7 @@ bus = &"Record"
 script = ExtResource("4_k56in")
 
 [node name="speech_recognizer" type="SpeechToText" parent="game/speech/speech_recognizer_script"]
-language_model = ExtResource("7_j148w")
+language_model = ExtResource("7_a7f68")
 
 [node name="speech_player" type="AudioStreamPlayer" parent="game/speech"]
 

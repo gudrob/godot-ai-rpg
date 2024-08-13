@@ -62,7 +62,7 @@ public partial class TextToSpeech : Node
             speechProcessing = true;
             Log($"Generating speech with speaker {speaker} and text {text}");
             var directoryPath = Path.Join(backend, "/output");
-            if(!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
+            if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
 
             while (generationProcessedCounter < generation)
             {
@@ -124,6 +124,7 @@ public partial class TextToSpeech : Node
 
     public override async void _Ready()
     {
+
         GD.Print(System.Environment.CurrentDirectory);
         instance = this;
         tree = GetTree();
@@ -151,6 +152,7 @@ public partial class TextToSpeech : Node
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && architecture == Architecture.Arm64)
         {
+            NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/macos-arm64/libonnxruntime.1.14.1.dylib"));
             Log("Detected MacOS on Arm64");
             backend = MACOS_ARM64_BACKEND;
             ttsPath = "tts";
@@ -165,6 +167,9 @@ public partial class TextToSpeech : Node
 
     private bool StartServer()
     {
+        //Temporarily disabled until fixed
+        return true;
+
         var architecture = RuntimeInformation.ProcessArchitecture;
 
         SelectBackend(architecture);

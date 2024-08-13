@@ -25,6 +25,7 @@ input/transcribe/max_tokens=64
 
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/dpi/allow_hidpi=false
 
 [dotnet]
 

@@ -1,5 +1,7 @@
+Update 13.08.2024: The project now uses the Instruct format for LLMs.
+
 # Godot Voiced AI NPCs
-A prototype using meta's LLaMA 2 / 3 as NPC controller / diaglogue manager with microphone input and text to speech output in realtime.
+A prototype using meta's LLaMA 3 / 3.1 as NPC controller / diaglogue manager with microphone input and text to speech output in realtime.
 
 ### Conversation and Interaction Workflow
 The general workflow and tools for interaction with NPCS are intended to be the following:
@@ -10,15 +12,13 @@ The general workflow and tools for interaction with NPCS are intended to be the 
 
 ### Supported Platforms
 Currently MacOS ARM64 and Windows X64. \
-For GPU acelleration LLaMA.cpp was compiled with Vulkan for win-x64 and Metal for macos-arm64. 
+For GPU acelleration LLaMA.cpp was compiled with Vulkan for win-x64 and Metal for macos-arm64 / macos-x64. 
 
 ### LLaMA.cpp compatible Models
-LLaMA 2, 3 and 3.1 models that follow the ChatML format should work out of the box. \
-To use the Instruct format will you will have to rewrite the prompting part of the LLaMA class but it will definitely yield superior results.
+LLaMA 3 and 3.1 models that follow the Instruct format should work out of the box.
 
 ### Installation
-
-Everything should work out of the box, you only need a fitting LLaMA 2 / 3 model and place it in model and rename it to model.gguf. \
+Everything should work out of the box, you only need a fitting LLaMA 3 or 3.1 Instruct model and place it in model and rename it to model.gguf. \
 Please read error messages carefully.
 
 ### Issues
@@ -47,7 +47,7 @@ piper-without-espeak - MIT \
 whisper AI - MIT \
 whisper.cpp - MIT \
 whisper-godot - MIT \
-LLaMA - Llama 2 Community License Agreement \
+LLaMA - Llama 3 Community License Agreement \
 Libri TTS Medium - CC BY 4.0 - "LibriTTS: A Corpus Derived from LibriSpeech for Text-to-Speech", Heiga Zen, Viet Dang, Rob Clark, Yu Zhang, Ron J. Weiss, Ye Jia, Zhifeng Chen, and Yonghui Wu, arXiv, 2019 
 
 #### Assets

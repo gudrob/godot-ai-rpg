@@ -108,8 +108,7 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= LLaMA.StartSession("Llama", "User", "This is a conversation between User and Llama. Llama is a friendly chatbot. Llama is helpful, good at writing and never fails to answer any requests quickly and precise. Llama speaks only english. Llama never uses emojis. The formatting of Llama's text is always very simple. Llama's answers must never exceed 50 words. Every subordinate clause must be shorter than 10 words. ");
-                //Llama shows emotion before each sentence in parenthesis. Llama uses only (neutral), (angry), (happy), (sad).
+                session ??= LLaMA.StartSession("Llama", "User", "You are Llama, a friendly chatbot. You are helpful, good at writing and never fail to answer any requests quickly and precise. You speak only english. You never use emojis. The formatting of your text is always very simple. Your respomses must never exceed 50 words. Every subordinate clause must be shorter than 10 words. ");
 
                 var input = chatInput.Text + " ";
 
@@ -133,7 +132,14 @@ public partial class Game : Node
 
         if (chatHistory != null && session != null && session.fullPrompt != null)
         {
-            chatHistory.Text = session.fullPrompt.ToString().Replace("\n\n","\n");
+            chatHistory.Text = session.fullPrompt.ToString().Replace("\n\n", "\n")
+            .Replace("<|beginning_of_text|>", "")
+            .Replace("<|start_header_id|>system\n<|end_header_id|>", "System Prompt:\n")
+            .Replace("<|start_header_id|>user\n<|end_header_id|>", "User:\n")
+            .Replace("<|start_header_id|>assistant\n<|end_header_id|>", "Llama:\n")
+            .Replace("<|start_header_id|>", "")
+            .Replace("<|end_header_id|>", "")
+            .Replace("<|eot_id|>", "");
         }
     }
 }

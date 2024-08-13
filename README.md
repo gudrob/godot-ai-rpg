@@ -12,7 +12,7 @@ The general workflow and tools for interaction with NPCS are intended to be the 
 
 ### Supported Platforms
 Currently MacOS ARM64 and Windows X64. \
-For GPU acelleration LLaMA.cpp was compiled with Vulkan for win-x64 and Metal for macos-arm64 / macos-x64. 
+For GPU acelleration LLaMA.cpp was compiled with Vulkan for win-x64 and Metal for macos-arm64. 
 
 ### LLaMA.cpp compatible Models
 LLaMA 3 and 3.1 models that follow the Instruct format should work out of the box.

@@ -1,15 +1,16 @@
 <Project Sdk="Godot.NET.Sdk/4.2.2">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TargetFramework>net8.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RootNamespace>Godotairpg</RootNamespace>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="tts\**" />
-    <EmbeddedResource Remove="tts\**" />
+    <Folder Include="scenes\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="scenes\" />
+    <!-- Root the assemblies to avoid trimming. -->
+    <TrimmerRootAssembly Include="GodotSharp" />
+    <TrimmerRootAssembly Include="$(TargetName)" />
   </ItemGroup>
 </Project>

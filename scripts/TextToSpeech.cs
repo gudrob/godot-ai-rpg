@@ -4,12 +4,11 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Threading;
 
 public partial class TextToSpeech : Node
 {
     static TextToSpeech instance;
-
-    private Process ttsProcess;
 
     private int generationCounter = 0;
 
@@ -17,28 +16,71 @@ public partial class TextToSpeech : Node
 
     private bool generationRunning = false;
 
-    private bool speechProcessing = true;
-
-    private StreamWriter input;
+    private bool speechProcessing = false;
 
     private SceneTree tree;
-
-    private string backend;
-
-    private string ttsPath;
-
-    const string UNSUPPORTED_BACKEND = "none";
-
-    string WINDOWS_X64_BACKEND = System.Environment.CurrentDirectory + "\\tts\\win-x64\\";
-
-    string MACOS_ARM64_BACKEND = "./tts/macos-arm64/";
 
     string outputFilePath = "";
 
     [Export]
     public bool allowCuda = false;
 
-    private Stopwatch keepaliveStopwatch = new();
+#if GODOT_MACOS
+    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true)]
+#elif GODOT_PC
+    [LibraryImport("ttslib-win-x64.dll", SetLastError = true)]
+#endif
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void LoadVoice(int modelDataLength, byte[] modelData);
+
+#if GODOT_MACOS
+    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+#elif GODOT_PC
+    [LibraryImport("ttslib-win-x64.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+#endif
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void LoadIPAData(string path);
+
+#if GODOT_MACOS
+    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true)]
+#elif GODOT_PC
+    [LibraryImport("ttslib-win-x64.dll", SetLastError = true)]
+#endif
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, float fadeTimeSeconds, [MarshalAs(UnmanagedType.Bool)] bool useCuda);
+
+#if GODOT_MACOS
+    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true)]
+#elif GODOT_PC
+    [LibraryImport("ttslib-win-x64.dll", SetLastError = true)]
+#endif
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void SetWriteToFile([MarshalAs(UnmanagedType.Bool)] bool path);
+
+#if GODOT_MACOS
+    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+#elif GODOT_PC
+    [LibraryImport("ttslib-win-x64.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+#endif
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void SetOutputDirectory(string path);
+
+#if GODOT_MACOS
+    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+#elif GODOT_PC
+    [LibraryImport("ttslib-win-x64.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+#endif
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial IntPtr GenerateVoiceData(out int dataLength, string text);
+
+#if GODOT_MACOS
+    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true)]
+#elif GODOT_PC
+    [LibraryImport("ttslib-win-x64.dll", SetLastError = true)]
+#endif
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void DiscardVoiceData(IntPtr data);
+
 
     public static async Task<AudioStreamWav> Generate(string speaker, string text, bool deleteAfterLoading = true, string rename = null)
     {
@@ -47,76 +89,60 @@ public partial class TextToSpeech : Node
 
     private async Task<AudioStreamWav> _Generate(string speaker, string text, bool deleteAfterLoading = true, string rename = null)
     {
+        Log($"Preparing speech with speaker {speaker} and text {text}");
+
         while (generationRunning || speechProcessing)
         {
             await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
         }
 
         generationRunning = true;
-        keepaliveStopwatch.Restart();
 
         var generation = generationCounter++;
 
-        try
-        {
-            speechProcessing = true;
-            Log($"Generating speech with speaker {speaker} and text {text}");
-            var directoryPath = Path.Join(backend, "/output");
-            if (!Directory.Exists(directoryPath)) Directory.CreateDirectory(directoryPath);
-
-            while (generationProcessedCounter < generation)
-            {
-                await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
-            }
-
-            await input.WriteLineAsync(speaker[..3] + text);
-
-            while (speechProcessing)
-            {
-                await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
-            }
-
-        }
-        catch (Exception exception)
-        {
-            Log("Exception while generating speech: \n" + exception);
-        }
-        finally
-        {
-            generationProcessedCounter++;
-            generationRunning = false;
-        }
-
         AudioStreamWav audioFile = null;
 
-        try
+        while (generationProcessedCounter < generation)
         {
-            audioFile = await RuntimeAudioLoader.LoadFile(outputFilePath);
-            if (deleteAfterLoading)
-            {
-                var deletePath = outputFilePath;
-                _ = Task.Run(() =>
-                {
-                    try { File.Delete(deletePath); } catch (Exception exception) { Log("Exception while deleting audio file: \n" + exception); }
-                });
-            }
-            else if (rename != null)
-            {
-                if (!rename.EndsWith(".wav")) rename += ".wav";
-                var movePath = outputFilePath;
-                _ = Task.Run(() =>
-                {
-                    try
-                    {
-                        File.Move(movePath, Path.Join(Path.GetDirectoryName(movePath), rename));
-                    }
-                    catch (Exception exception) { Log("Exception while deleting audio file: \n" + exception); }
-                });
-            }
+            await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
         }
-        catch (Exception exception)
+
+        speechProcessing = true;
+        Log($"Generating speech with speaker {speaker} and text {text}");
+
+        int.TryParse(text, out var res);
+
+        ThreadPool.QueueUserWorkItem((_) =>
         {
-            Log("Exception while loading audio file: \n" + exception);
+            try
+            {
+                ApplySynthesisConfig(1.3f, 0.3f, 0.6f, res, 0.4f, 0.1f, allowCuda);
+                var data = GenerateVoiceData(out var dataLength, text);
+                byte[] byteData = new byte[dataLength];
+                Marshal.Copy(data, byteData, 0, dataLength);
+                DiscardVoiceData(data);
+
+                audioFile = new()
+                {
+                    MixRate = 22050,
+                    Data = byteData,
+                    Format = AudioStreamWav.FormatEnum.Format16Bits,
+                    LoopEnd = -1,
+                    LoopBegin = 0,
+                    LoopMode = AudioStreamWav.LoopModeEnum.Disabled
+                };
+            }
+            finally
+            {
+                generationProcessedCounter++;
+                generationRunning = false;
+                speechProcessing = false;
+            }
+        });
+
+        while (speechProcessing)
+        {
+            await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
         }
 
         return audioFile;
@@ -124,118 +150,19 @@ public partial class TextToSpeech : Node
 
     public override async void _Ready()
     {
-
-        GD.Print(System.Environment.CurrentDirectory);
+#if GODOT_MACOS
+        NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/macos-arm64/libonnxruntime.1.18.0.dylib"));
+#elif GODOT_PC
+        NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/win-x64/onnxruntime.dll"));
+        NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/win-x64/onnxruntime_providers_shared.dll"));
+#endif
         instance = this;
         tree = GetTree();
-        StartServer();
-        keepaliveStopwatch.Start();
-
-        /*for(var i = 0; i < 900; i++)
-        {
-            await Generate(string.Format("{0:000}", i), "Hello there. This a test to evaluate speaker quality.", false, "SAMPLE_" + i);
-        }*/
-    }
-
-    public override async void _Process(double delta)
-    {
-        if (keepaliveStopwatch.Elapsed.TotalMilliseconds > 25000 && !(generationRunning || speechProcessing))
-        {
-            await input.WriteLineAsync("-KEEPALIVE-");
-            keepaliveStopwatch.Restart();
-        }
-    }
-
-    private void SelectBackend(Architecture architecture)
-    {
-        backend = UNSUPPORTED_BACKEND;
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && architecture == Architecture.Arm64)
-        {
-            NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/macos-arm64/libonnxruntime.1.14.1.dylib"));
-            Log("Detected MacOS on Arm64");
-            backend = MACOS_ARM64_BACKEND;
-            ttsPath = "tts";
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && architecture == Architecture.X64)
-        {
-            Log("Detected Windows on X64");
-            backend = WINDOWS_X64_BACKEND;
-            ttsPath = "tts.exe";
-        }
-    }
-
-    private bool StartServer()
-    {
-        //Temporarily disabled until fixed
-        return true;
-
-        var architecture = RuntimeInformation.ProcessArchitecture;
-
-        SelectBackend(architecture);
-
-        if (backend == UNSUPPORTED_BACKEND)
-        {
-            Log($"Architecture {architecture} on this platform is currently unsupported");
-            tree.Quit();
-        }
-
-        Log($"Starting. Working directory: {backend}, tts path: {ttsPath}");
-
-        ttsProcess = new();
-        ttsProcess.StartInfo.ErrorDialog = false;
-        ttsProcess.StartInfo.UseShellExecute = false;
-        ttsProcess.EnableRaisingEvents = true;
-        ttsProcess.StartInfo.CreateNoWindow = true;
-        ttsProcess.StartInfo.RedirectStandardError = true;
-        ttsProcess.StartInfo.RedirectStandardInput = true;
-        ttsProcess.StartInfo.RedirectStandardOutput = true;
-        ttsProcess.Exited += processExited;
-        ttsProcess.ErrorDataReceived += processErrorDataReceived;
-        ttsProcess.OutputDataReceived += processOutputDataReceived;
-        ttsProcess.StartInfo.WorkingDirectory = backend;
-        ttsProcess.StartInfo.FileName = backend + ttsPath;
-        ttsProcess.StartInfo.Arguments = "--model \"./../libri_medium.onnx\" --output_dir \"./output\" --config \"./../libri_medium.json\" --length_scale 1.45 --ipa-path \"./../ipa.data\"";
-
-
-        ttsProcess.Start();
-        input = ttsProcess.StandardInput;
-        ttsProcess.BeginErrorReadLine();
-        ttsProcess.BeginOutputReadLine();
-
-        void processExited(object sender, EventArgs e)
-        {
-            Log("Exited with code " + ttsProcess.ExitCode);
-            StartServer();
-        }
-
-        void processErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            Log(e.Data);
-        }
-
-        void processOutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            var data = (e.Data ?? "").Trim();
-
-            if (data.Contains("-READY-"))
-            {
-                Log("Ready to generate");
-                speechProcessing = false;
-            }
-            else if (data.StartsWith("-FILEPATH-"))
-            {
-                outputFilePath = data["-FILEPATH-".Length..];
-                speechProcessing = false;
-                Log(data);
-            }
-            else if (data.Length > 0)
-            {
-                Log(data);
-            }
-        }
-
-        return true;
+        LoadIPAData(ProjectSettings.GlobalizePath("res://tts/ipa.data"));
+        var modelByteData = await File.ReadAllBytesAsync(ProjectSettings.GlobalizePath("res://tts/libri_medium.onnx"));
+        LoadVoice(modelByteData.Length, modelByteData);
+        SetWriteToFile(false);
+        ApplySynthesisConfig(1.3f, 0.3f, 0.6f, 0, 0.4f, 0.1f, false);
     }
 
     static void Log(string info)

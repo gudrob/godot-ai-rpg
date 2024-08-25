@@ -5,34 +5,68 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Godot;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace AIRPG
 {
 	public partial class LLaMA : Node
 	{
+
+#if GODOT_MACOS
+		[LibraryImport("llama-server", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		private static partial IntPtr main(int argc, IntPtr argv);
+
+		[LibraryImport("llama-server", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static partial bool LLAMA_IsActive(UInt32 slotIndex);
+
+		[LibraryImport("llama-server", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static partial void LLAMA_Terminate();
+
+		[LibraryImport("llama-server", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static partial bool LLAMA_Initialized();
+
+		[LibraryImport("llama-server", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		private static partial void LLAMA_DiscardData(IntPtr dataPointer);
+
+		[LibraryImport("llama-server", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		private static partial int LLAMA_CheckLoops();
+
+		[LibraryImport("llama-server", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		private static partial IntPtr LLAMA_GetData(UInt32 slotIndex, out int dataLength);
+
+		[LibraryImport("llama-server", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static partial bool LLAMA_Prompt(UInt32 slotIndex, string text);
+#endif
+
 		private static LLaMA Instance;
-
-		private static Process LLaMAProcess;
-
-		private string completionAddress;
-
-		private HttpService httpService;
 
 		[Export]
 		public NPC character;
-
-		const string UNSUPPORTED_BACKEND = "none";
 
 		[Export]
 		public LineEdit speakerInput;
 
 		private static int seed = (int)(GD.Randi() / 2);
 
-		public static async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 1f)
+		public void LoadLLaMALibrary()
+		{
+			NativeLibrary.Load("./llama-server");
+		}
+
+		public async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 1f)
 		{
 			Game.SetProcessingInfo("Preparing Prompt");
 
@@ -40,52 +74,38 @@ namespace AIRPG
 
 			session.fullPrompt.Append("<|start_header_id|>user<|end_header_id|>\n" + text + "<|eot_id|>\n<|start_header_id|>assistant<|end_header_id|>\n");
 
-			string body;
-
-			body = "{"
-			+ $"\"cache_prompt\": true,"
-			+ $"\"frequency_penalty\": 0,"
-			+ $"\"grammar\": \"\","
-			+ $"\"image_data\": [],"
-			+ $"\"min_p\": 0.05,"
-			+ $"\"mirostat\": 0,"
-			+ $"\"mirostat_eta\": 0.1,"
-			+ $"\"mirostat_tau\": 5,"
-			+ $"\"n_predict\": {predictTokens},"
-			+ $"\"n_probs\": 0,"
-			+ $"\"presence_penalty\": 0,"
-			+ $"\"prompt\": \"{HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString())}\","
-			+ $"\"repeat_last_n\": 256,"
-			+ $"\"repeat_penalty\": {repeatPenalty},"
-			+ $"\"slot_id\": -1,"
-			+ $"\"stop\": [\"<|eot_id|>\"],"
-			+ $"\"stream\": true,"
-			+ $"\"temperature\": {temperature},"
-			+ $"\"tfs_z\": 1,"
-			+ $"\"top_k\": 45,"
-			+ $"\"top_p\": 0.5,"
-			+ $"\"min_p\": 0.01,"
-			+ $"\"seed\": " + seed
-			+ "}";
-
-			Log(body);
-
-			var sw = Stopwatch.StartNew();
-			var firstByte = false;
-
-			var response = await Instance.httpService.PostAsync(Instance.completionAddress, body, "application/json");
-
-			byte[] buf = new byte[32768];
-			int bytesRead;
-
-			var stream = await response.Content.ReadAsStreamAsync();
-
 			Game.SetProcessingInfo("Sending Prompt");
 
-			string tmpString = "";
+			GD.Print(LLAMA_Prompt(0, @"{
+            ""cache_prompt"": true,
+            ""n_predict"": 256,
+            ""prompt"": """ + System.Web.HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString()) + @""",
+			""repeat_last_n"": 256,
+            ""repeat_penalty"": 1.14,
+			""seed"": " + seed + @",
+            ""stop"": [""<|eot_id|>""],
+            ""stream"": true,
+            ""temperature"": 1.1,
+			""top_k"": 40,
+			""top_p"": 0.97
+			}"));
 
-			while ((bytesRead = await stream.ReadAsync(buf, 0, buf.Length)) > 0)
+			var sw = Stopwatch.StartNew();
+
+			bool firstByte = false;
+
+			Game.SetProcessingInfo("Tokenizing Prompt");
+
+			while (LLAMA_IsActive(0))
 			{
+				var data = LLAMA_GetData(0, out int dataLength);
+
+				if (dataLength == 0)
+				{
+					await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+					continue;
+				}
+
 				Game.SetProcessingInfo("Processing AI Response");
 
 				if (firstByte == false)
@@ -93,44 +113,24 @@ namespace AIRPG
 					firstByte = true;
 					Log("Time until first byte: " + sw.Elapsed.TotalMilliseconds + " ms");
 				}
-				string chunk = Encoding.UTF8.GetString(buf, 0, bytesRead);
-				var chunkTrimmed = chunk.Trim();
 
-				var chunks = chunkTrimmed.Split("data: ");
-
-				foreach (var chunkToProcess in chunks)
+				byte[] byteData = new byte[dataLength];
+				Marshal.Copy(data, byteData, 0, dataLength);
+				LLAMA_DiscardData(data);
+				if (byteData.Length > 0)
 				{
-					if (chunkToProcess.Trim().Length == 0) continue;
-
-					try
-					{
-						if (chunkToProcess.Contains("{\"content\":\"\",\"id_slot\"") && chunkToProcess.Contains("\"stop\":true,\"model\":\""))
-						{
-							Log("End of data");
-							goto SkipDataParsing;
-						}
-						Log("Data received: " + chunkToProcess);
-						var responseDict = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(chunkToProcess);
-						var res = responseDict["content"].ToString();
-						if (res.Length == 0) continue;
-
-						Instance.TrackLineForTTS(session, res);
-					}
-					catch (Exception ex)
-					{
-						Log("Exception while parsing AI response: " + ex.ToString());
-					}
-					tmpString += chunk;
+					var str = Encoding.UTF8.GetString(byteData);
+					Instance.TrackLineForTTS(session, str);
 				}
+				await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 			}
 
-		SkipDataParsing:
 			Instance.TrackLineForTTS(session, "", true);
 			Log("Total prompt time: " + sw.Elapsed.TotalMilliseconds + " ms");
 			Game.SetProcessingInfo("AI Response finished", false);
 		}
 
-		public static Session StartSession(string basePrompt)
+		public Session StartSession(string basePrompt)
 		{
 			return new Session()
 			{
@@ -138,13 +138,34 @@ namespace AIRPG
 			};
 		}
 
+		int delayPos = 0;
+		int delayPosProcessed = 0;
+
 		private async void AddToSessionPromptDelayed(Session session, string text)
 		{
-			await ToSignal(GetTree().CreateTimer(0.333), SceneTreeTimer.SignalName.Timeout);
-			session.fullPrompt.Append(text);
+			var pos = delayPos++;
+			var tree = GetTree();
+			try
+			{
+				await ToSignal(tree.CreateTimer(0.3), SceneTreeTimer.SignalName.Timeout);
+				while (delayPosProcessed != pos)
+				{
+					await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+				}
+
+				foreach (var t in text)
+				{
+					session.fullPrompt.Append(t);
+					await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+				}
+			}
+			finally
+			{
+				delayPosProcessed++;
+			}
 		}
 
-		private static readonly char[] sentenceTerminationTokens = new char[] { '!', '?', ':', '.', ',' };
+		private static readonly char[] sentenceTerminationTokens = ['!', '?', ':', '.', ',', ';'];
 
 
 		private int speechIndex = 0;
@@ -281,94 +302,36 @@ namespace AIRPG
 
 			Instance = this;
 
-			httpService = new();
-
 			Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
-
-			foreach (var process in Process.GetProcessesByName("server"))
-			{
-				process.Kill();
-			}
-
 		}
 
-
-		public static void Initialize(int gpuLayers = 33, int cpuThreads = 2, int maximumSessions = 2, string host = "127.0.0.1", short port = 8080, int contextSize = 2048, int maxWaitTime = 600, bool allowMemoryMapping = true, bool alwaysKeepInMemory = false)
+		public void StartLLaMA(int gpuLayers, int cpuThreads, int maximumSessions, int contextSize)
 		{
-			Instance.StartServer(gpuLayers, cpuThreads, maximumSessions, host, port, contextSize, maxWaitTime, allowMemoryMapping, alwaysKeepInMemory);
-		}
-
-		private static string SelectBackend(Architecture architecture)
-		{
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && architecture == Architecture.Arm64)
+			ThreadPool.QueueUserWorkItem((_) =>
 			{
-				Log("Detected MacOS on Arm64");
-				return "./llama/macos-arm64/";
-			}
-			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && architecture == Architecture.X64)
-			{
-				Log("Detected Windows on X64");
-				return "./llama/win-x64/";
-			}
+				try
+				{
+					string[] args = ["server", "--model", ProjectSettings.GlobalizePath("res://model.gguf"), "--n-gpu-layers", gpuLayers.ToString(), "--threads", cpuThreads.ToString(), "--flash-attn", "-ctk", "q5_1", "-ctv", "q5_1", "-c", contextSize.ToString(), "--parallel", maximumSessions.ToString()];
 
-			return UNSUPPORTED_BACKEND;
-		}
+					int argc = args.Length;
+					var argv = new IntPtr[argc];
+					for (int i = 0; i < argc; i++)
+					{
+						argv[i] = Marshal.StringToHGlobalAnsi(args[i]);
+					}
 
-		private bool StartServer(int gpuLayers, int cpuThreads, int maximumSessions, string host, short port, int contextSize, int maxWaitTime, bool allowMemoryMapping, bool alwaysKeepInMemory)
-		{
-			completionAddress = $"http://{host}:{port}/completion";
+					IntPtr argvPtr = Marshal.AllocHGlobal(IntPtr.Size * argc);
+					Marshal.Copy(argv, 0, argvPtr, argc);
 
-			var architecture = RuntimeInformation.ProcessArchitecture;
+					var a = main(argc, argvPtr);
 
-			string modelPath = "./../../llama/model/model.gguf";
-			string backend = SelectBackend(architecture);
-
-			if (backend == UNSUPPORTED_BACKEND)
-			{
-				Log($"Architecture {architecture} on this platform is currently unsupported");
-				GetTree().Quit();
-			}
-
-			LLaMAProcess = new();
-			LLaMAProcess.StartInfo.ErrorDialog = false;
-			LLaMAProcess.StartInfo.UseShellExecute = false;
-			LLaMAProcess.EnableRaisingEvents = true;
-			LLaMAProcess.StartInfo.CreateNoWindow = true;
-			LLaMAProcess.StartInfo.RedirectStandardError = true;
-			LLaMAProcess.StartInfo.RedirectStandardInput = true;
-			LLaMAProcess.StartInfo.RedirectStandardOutput = true;
-			LLaMAProcess.StartInfo.WorkingDirectory = backend;
-			LLaMAProcess.StartInfo.FileName = backend + "server";
-			LLaMAProcess.StartInfo.Arguments = $"-m \"{modelPath}\" --log-format text --flash-attn --cache-type-k q5_1 --cache-type-v q5_1 --n-gpu-layers {gpuLayers} -t {cpuThreads} --host \"{host}\" --port {port} -c {contextSize} --timeout {maxWaitTime} --parallel {maximumSessions} ";
-			LLaMAProcess.Exited += processExited;
-			LLaMAProcess.ErrorDataReceived += processErrorDataReceived;
-			LLaMAProcess.OutputDataReceived += processOutputDataReceived;
-
-			if (!LLaMAProcess.Start())
-			{
-				Log("Could not start the AI process.");
-				return false;
-			}
-
-			LLaMAProcess.BeginErrorReadLine();
-			LLaMAProcess.BeginOutputReadLine();
-
-			void processExited(object sender, EventArgs e)
-			{
-				Log("Exited with code " + LLaMAProcess.ExitCode);
-			}
-
-			void processErrorDataReceived(object sender, DataReceivedEventArgs e)
-			{
-				Log(e.Data);
-			}
-
-			void processOutputDataReceived(object sender, DataReceivedEventArgs e)
-			{
-				//GD.Print(e.Data);
-			}
-
-			return true;
+					Log("LLAMA Exit Code: " + a);
+				}
+				catch (Exception e)
+				{
+					GD.PrintErr(e);
+				}
+			});
 		}
 
 		static void Log(string info)
@@ -381,11 +344,6 @@ namespace AIRPG
 		{
 			var time = DateTime.UtcNow - startTime;
 			return $"[LLAMA][{time:hh\\:mm\\:ss\\:fff}] ";
-		}
-
-		public override void _ExitTree()
-		{
-			LLaMAProcess?.Kill();
 		}
 	}
 

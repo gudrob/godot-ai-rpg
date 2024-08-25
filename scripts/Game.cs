@@ -27,14 +27,18 @@ public partial class Game : Node
 
     public int processingStep = 0;
 
+    LLaMA llamaInstace;
+
     public override void _Ready()
     {
-        LLaMA.Initialize();
-
+        llamaInstace = FindChild("llama") as LLaMA;
         processingText = FindChild("processing_text") as Label;
         chatHistory = FindChild("chat_history") as Label;
         chatInput = FindChild("chat_input") as LineEdit;
         Instance = this;
+
+        llamaInstace.LoadLLaMALibrary();
+        llamaInstace.StartLLaMA(33, 2, 1, 4096);
     }
 
     public void SetText(string text)
@@ -108,11 +112,11 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= LLaMA.StartSession("You are Llama, a friendly chatbot. You are helpful, good at writing and never fail to answer any requests quickly and precise. You speak only english. You never use emojis. The formatting of your text is always very simple. Your respomses must never exceed 50 words. Every subordinate clause must be shorter than 10 words. ");
+                session ??= llamaInstace.StartSession("You are Llama, a friendly chatbot. You are helpful, good at writing and never fail to answer any requests quickly and precise. You speak only english. You never use emojis. The formatting of your text is always very simple. Your respomses must never exceed 50 words. Every subordinate clause must be shorter than 10 words. ");
 
                 var input = chatInput.Text + " ";
 
-                var promptTask = LLaMA.Generate(session, input);
+                var promptTask = llamaInstace.Generate(session, input);
 
                 while (!promptTask.IsCompleted)
                 {

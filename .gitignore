@@ -15,6 +15,8 @@ data_*/
 mono_crash.*.json
 
 model/*
+model.gguf
+*.gguf
 llama/model/*
 *.log
 

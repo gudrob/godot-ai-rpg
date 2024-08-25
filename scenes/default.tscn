@@ -13,11 +13,11 @@
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lvya5"]
 texture = ExtResource("3_ltst5")
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_juw8d"]
-
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_aj0wa"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_n0562"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_juw8d"]
 
 [sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_qiane"]
 
@@ -45,11 +45,6 @@ adjustment_contrast = 1.12
 adjustment_saturation = 1.08
 
 [node name="root" type="Node3D"]
-
-[node name="llama" type="Node" parent="." node_paths=PackedStringArray("character", "speakerInput")]
-script = ExtResource("1_0pdge")
-character = NodePath("../npc")
-speakerInput = NodePath("../game/chat/speaker_input")
 
 [node name="game" type="Control" parent="."]
 layout_mode = 3
@@ -90,6 +85,7 @@ offset_right = 1136.0
 offset_bottom = 639.0
 
 [node name="processing_panel2" type="Panel" parent="game/chat"]
+layout_mode = 0
 offset_left = 899.0
 offset_top = 456.0
 offset_right = 1136.0
@@ -114,6 +110,7 @@ vertical_alignment = 1
 autowrap_mode = 3
 
 [node name="processing_text" type="Label" parent="game/chat/processing_panel/processing_text"]
+layout_mode = 0
 offset_left = 880.0
 offset_top = -40.0
 offset_right = 989.0
@@ -124,13 +121,14 @@ vertical_alignment = 1
 autowrap_mode = 3
 
 [node name="speaker_input" type="LineEdit" parent="game/chat"]
+layout_mode = 0
 offset_left = 996.0
 offset_top = 458.0
 offset_right = 1133.0
 offset_bottom = 487.0
-theme_override_styles/normal = SubResource("StyleBoxEmpty_juw8d")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_aj0wa")
 theme_override_styles/read_only = SubResource("StyleBoxEmpty_n0562")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_juw8d")
 text = "9"
 alignment = 1
 
@@ -140,9 +138,14 @@ offset_left = 572.0
 offset_top = 574.0
 offset_right = 1132.0
 offset_bottom = 634.0
-theme_override_styles/normal = SubResource("StyleBoxEmpty_juw8d")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_aj0wa")
 theme_override_styles/read_only = SubResource("StyleBoxEmpty_n0562")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_juw8d")
+
+[node name="llama" type="Node" parent="game/chat" node_paths=PackedStringArray("character", "speakerInput")]
+script = ExtResource("1_0pdge")
+character = NodePath("../../../npc")
+speakerInput = NodePath("../speaker_input")
 
 [node name="speech" type="Control" parent="game" node_paths=PackedStringArray("speechStartButton", "speechResult", "speechRecognizer", "speechAutosend")]
 layout_mode = 1

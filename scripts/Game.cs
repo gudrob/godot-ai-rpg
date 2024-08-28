@@ -64,6 +64,8 @@ public partial class Game : Node
 
     public async override void _Process(double delta)
     {
+        if (!LLaMA.LLAMA_Initialized()) return;
+
         bool send = false;
 
         if (!enterPressed)
@@ -112,7 +114,7 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= llamaInstace.StartSession("You are Llama, a friendly chatbot. You are helpful, good at writing and never fail to answer any requests quickly and precise. You speak only english. You never use emojis. The formatting of your text is always very simple. Your respomses must never exceed 50 words. Every subordinate clause must be shorter than 10 words. ");
+                session ??= llamaInstace.StartSession("You are Llama, a kind, energetic, casual and helpful NPC in a role playing game. You do not acknowledge that you are inside a game except when you are asked. You speak only english. You never use emojis. Your respomses must never exceed 40 words. Every subordinate clause must be shorter than 8 words. You are speaking, not writing.");
 
                 var input = chatInput.Text + " ";
 

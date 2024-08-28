@@ -119,7 +119,7 @@ public partial class TextToSpeech : Node
         {
             try
             {
-                ApplySynthesisConfig(1.3f, 0.33f, 0.66f, res, 0.4f, 0.1f, allowCuda);
+                ApplySynthesisConfig(1.4f, 0.3f, 0.66f, res, 0.35f, 0.11f, allowCuda);
                 var data = GenerateVoiceData(out var dataLength, text);
                 byte[] byteData = new byte[dataLength];
                 Marshal.Copy(data, byteData, 0, dataLength);
@@ -165,7 +165,7 @@ public partial class TextToSpeech : Node
         var modelByteData = await File.ReadAllBytesAsync(ProjectSettings.GlobalizePath("res://tts/libri_medium.onnx"));
         LoadVoice(modelByteData.Length, modelByteData);
         SetWriteToFile(false);
-        ApplySynthesisConfig(1.3f, 0.3f, 0.6f, 0, 0.4f, 0.1f, false);
+        ApplySynthesisConfig(1.4f, 0.3f, 0.66f, 0, 0.35f, 0.11f, false);
     }
 
     static void Log(string info)

@@ -18,6 +18,7 @@ config/icon="res://icon.svg"
 
 [audio]
 
+driver/output_latency=100
 driver/enable_input=true
 input/transcribe/max_tokens=64
 
@@ -45,4 +46,5 @@ limits/webrtc/max_channel_in_buffer_kb=128
 
 [rendering]
 
-anti_aliasing/quality/use_taa=true
+scaling_3d/mode=2
+scaling_3d/scale=0.9

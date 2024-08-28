@@ -31,7 +31,7 @@ namespace AIRPG
 		[LibraryImport("llama-server", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		private static partial bool LLAMA_Initialized();
+		public static partial bool LLAMA_Initialized();
 
 		[LibraryImport("llama-server", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
@@ -85,9 +85,8 @@ namespace AIRPG
 			""seed"": " + seed + @",
             ""stop"": [""<|eot_id|>""],
             ""stream"": true,
-            ""temperature"": 1.1,
-			""top_k"": 40,
-			""top_p"": 0.97
+            ""temperature"": 1,
+			""top_k"": 50
 			}"));
 
 			var sw = Stopwatch.StartNew();
@@ -148,6 +147,7 @@ namespace AIRPG
 			try
 			{
 				await ToSignal(tree.CreateTimer(0.3), SceneTreeTimer.SignalName.Timeout);
+
 				while (delayPosProcessed != pos)
 				{
 					await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
@@ -156,7 +156,6 @@ namespace AIRPG
 				foreach (var t in text)
 				{
 					session.fullPrompt.Append(t);
-					await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
 				}
 			}
 			finally
@@ -174,6 +173,7 @@ namespace AIRPG
 		private async void TrackLineForTTS(Session session, string chunk, bool hasEnded = false)
 		{
 			chunk = Regex.Replace(chunk, @"[^\u0000-\u007F]+", string.Empty);
+			Log("Chunk received: " + chunk);
 			AddToSessionPromptDelayed(session, chunk);
 			bool chunkAdded = false;
 

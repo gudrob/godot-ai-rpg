@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://s86py3x3v5vd"]
+[gd_scene load_steps=19 format=3 uid="uid://s86py3x3v5vd"]
 
 [ext_resource type="Script" path="res://scripts/LLaMA.cs" id="1_0pdge"]
 [ext_resource type="Script" path="res://scripts/Game.cs" id="2_5ulk5"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/TextToSpeech.cs" id="5_hht3w"]
 [ext_resource type="PackedScene" uid="uid://b5p7aa8uvbsm0" path="res://scenes/npc.tscn" id="6_8d3ht"]
 [ext_resource type="WhisperResource" path="res://addons/godot_whisper/models/whisper_very_low.bin" id="7_a7f68"]
+[ext_resource type="Material" uid="uid://dx1hiufdeujjt" path="res://assets/materials/body.tres" id="10_adr4d"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lvya5"]
 texture = ExtResource("3_ltst5")
@@ -129,7 +130,7 @@ offset_bottom = 487.0
 theme_override_styles/focus = SubResource("StyleBoxEmpty_aj0wa")
 theme_override_styles/read_only = SubResource("StyleBoxEmpty_n0562")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_juw8d")
-text = "9"
+text = "10"
 alignment = 1
 
 [node name="chat_input" type="LineEdit" parent="game/chat"]
@@ -230,8 +231,11 @@ transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 
 current = true
 
 [node name="npc" parent="." node_paths=PackedStringArray("lookAtTarget") instance=ExtResource("6_8d3ht")]
-transform = Transform3D(0.999848, 0.0174524, 0, -0.0174524, 0.999848, 0, 0, 0, 1, 0, 0, 0)
+transform = Transform3D(0.999228, 0.0180508, 0.0348942, -0.0174498, 0.999696, -0.0174524, -0.0351986, 0.01683, 0.999239, 0, 0, 0)
 lookAtTarget = NodePath("../camera")
+
+[node name="body" parent="npc/skeleton" index="0"]
+material_override = ExtResource("10_adr4d")
 
 [node name="environment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_e5e3b")
@@ -242,5 +246,8 @@ shadow_enabled = true
 shadow_bias = 0.052
 shadow_normal_bias = 0.517
 directional_shadow_mode = 0
-directional_shadow_max_distance = 2.5
-directional_shadow_pancake_size = 4.5
+directional_shadow_fade_start = 1.0
+directional_shadow_max_distance = 3.2
+directional_shadow_pancake_size = 3.2
+
+[editable path="npc"]

@@ -1,12 +1,12 @@
-[gd_scene load_steps=32 format=3 uid="uid://b5p7aa8uvbsm0"]
+[gd_scene load_steps=33 format=3 uid="uid://b5p7aa8uvbsm0"]
 
 [ext_resource type="Script" path="res://scripts/NPC.cs" id="1_pccoo"]
 [ext_resource type="ArrayMesh" path="res://assets/models/body/body.mesh" id="1_te8be"]
 [ext_resource type="ArrayMesh" path="res://assets/models/body/eyes.mesh" id="2_s2pal"]
 [ext_resource type="Texture2D" uid="uid://b5vlqqep0l5j2" path="res://assets/textures/body/skin_normal.png" id="3_3i1im"]
 [ext_resource type="Skin" uid="uid://dc5r1em81mx3i" path="res://assets/misc/skin_data.tres" id="3_8xfsi"]
-[ext_resource type="ArrayMesh" path="res://assets/models/body/hair.mesh" id="3_dv2sp"]
-[ext_resource type="Material" uid="uid://dx1hiufdeujjt" path="res://assets/materials/body.tres" id="3_n4srf"]
+[ext_resource type="ArrayMesh" uid="uid://cfbbe80fmgmy7" path="res://assets/models/body/hair.mesh" id="3_dv2sp"]
+[ext_resource type="Texture2D" uid="uid://du8xcxk17e6gg" path="res://assets/textures/body/female_young.png" id="3_rlvvg"]
 [ext_resource type="ArrayMesh" path="res://assets/models/body/eyelashes.mesh" id="4_y14l8"]
 [ext_resource type="ArrayMesh" path="res://assets/models/clothes/jeans_01.mesh" id="5_fjdfk"]
 [ext_resource type="Texture2D" uid="uid://bv1rmpjf8jwo1" path="res://assets/textures/body/eyes_albedo.png" id="5_fynft"]
@@ -24,6 +24,18 @@
 [ext_resource type="AnimationLibrary" uid="uid://25dqon1iyvi1" path="res://assets/animations/idle.tres" id="22_l3cnu"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ty1hc"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gf1i2"]
+albedo_texture = ExtResource("3_rlvvg")
+metallic = 0.02
+metallic_specular = 0.2
+roughness = 0.41
+normal_enabled = true
+normal_texture = ExtResource("3_3i1im")
+anisotropy_enabled = true
+subsurf_scatter_enabled = true
+subsurf_scatter_strength = 0.06
+subsurf_scatter_skin_mode = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c1ude"]
 albedo_texture = ExtResource("5_fynft")
@@ -43,7 +55,6 @@ roughness = 0.85
 normal_enabled = true
 normal_scale = 1.16
 normal_texture = ExtResource("3_3i1im")
-subsurf_scatter_enabled = true
 subsurf_scatter_strength = 0.39
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i022v"]
@@ -586,7 +597,7 @@ bones/68/scale = Vector3(1, 1, 1)
 
 [node name="body" type="MeshInstance3D" parent="skeleton"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08165e-12, -2.08165e-12, -2.08165e-12)
-material_override = ExtResource("3_n4srf")
+material_override = SubResource("StandardMaterial3D_gf1i2")
 mesh = ExtResource("1_te8be")
 skin = ExtResource("3_8xfsi")
 
@@ -639,6 +650,6 @@ skin = ExtResource("3_8xfsi")
 
 [node name="head_IK" type="SkeletonIK3D" parent="skeleton"]
 process_priority = 1
+influence = 0.0
 root_bone = &"Head"
 tip_bone = &"head.001"
-interpolation = 0.0

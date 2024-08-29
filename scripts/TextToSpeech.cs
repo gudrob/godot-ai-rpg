@@ -165,7 +165,7 @@ public partial class TextToSpeech : Node
         var modelByteData = await File.ReadAllBytesAsync(ProjectSettings.GlobalizePath("res://tts/libri_medium.onnx"));
         LoadVoice(modelByteData.Length, modelByteData);
         SetWriteToFile(false);
-        ApplySynthesisConfig(1.4f, 0.3f, 0.66f, 0, 0.35f, 0.11f, false);
+        ApplySynthesisConfig(1.3f, 0.29f, 0.835f, 0, 0.45f, 0.11f, false);
     }
 
     static void Log(string info)

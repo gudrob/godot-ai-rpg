@@ -114,7 +114,7 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= llamaInstace.StartSession("You are Llama, a kind, energetic, casual and helpful NPC in a role playing game. You do not acknowledge that you are inside a game except when you are asked. You speak only english. You never use emojis. Your respomses must never exceed 40 words. Every subordinate clause must be shorter than 8 words. You are speaking, not writing.");
+                session ??= llamaInstace.StartSession("You are Bellamy, a kind, energetic, casual and helpful person in a role playing game. You do not acknowledge that you are inside a game except when you are asked. You speak only english. You never use emojis. Your respomses must never exceed 40 words. Every subordinate clause should be shorter than 10 words. You are now meeting the player (user) for the first time.");
 
                 var input = chatInput.Text + " ";
 
@@ -141,8 +141,8 @@ public partial class Game : Node
             chatHistory.Text = session.fullPrompt.ToString().Replace("\n\n", "\n")
             .Replace("<|beginning_of_text|>", "")
             .Replace("<|start_header_id|>system<|end_header_id|>\n", "System Prompt:\n")
-            .Replace("<|start_header_id|>user<|end_header_id|>\n", "User:\n")
-            .Replace("<|start_header_id|>assistant<|end_header_id|>\n", "Llama:\n")
+            .Replace("<|start_header_id|>user<|end_header_id|>\n", "Player:\n")
+            .Replace("<|start_header_id|>assistant<|end_header_id|>\n", "Bellamy:\n")
             .Replace("<|start_header_id|>", "")
             .Replace("<|end_header_id|>", "")
             .Replace("<|eot_id|>", "");

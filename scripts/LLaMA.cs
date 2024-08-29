@@ -85,7 +85,7 @@ namespace AIRPG
 			""seed"": " + seed + @",
             ""stop"": [""<|eot_id|>""],
             ""stream"": true,
-            ""temperature"": 1,
+            ""temperature"": 1.2,
 			""top_k"": 50
 			}"));
 
@@ -156,6 +156,7 @@ namespace AIRPG
 				foreach (var t in text)
 				{
 					session.fullPrompt.Append(t);
+					await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
 				}
 			}
 			finally
@@ -311,7 +312,7 @@ namespace AIRPG
 			{
 				try
 				{
-					string[] args = ["server", "--model", ProjectSettings.GlobalizePath("res://model.gguf"), "--n-gpu-layers", gpuLayers.ToString(), "--threads", cpuThreads.ToString(), "--flash-attn", "-ctk", "q5_1", "-ctv", "q5_1", "-c", contextSize.ToString(), "--parallel", maximumSessions.ToString()];
+					string[] args = ["server", "--model", ProjectSettings.GlobalizePath("res://model.gguf"), "--n-gpu-layers", gpuLayers.ToString(), "--threads", cpuThreads.ToString(), "--flash-attn", "-ctk", "q8_0", "-ctv", "q8_0", "-c", contextSize.ToString(), "--parallel", maximumSessions.ToString()];
 
 					int argc = args.Length;
 					var argv = new IntPtr[argc];

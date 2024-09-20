@@ -45,7 +45,7 @@ public partial class Game : Node
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         }
 
-        
+
     }
 
     public void SetText(string text)
@@ -73,11 +73,16 @@ public partial class Game : Node
     {
         if (!LLaMA.LLAMA_Initialized()) return;
 
+        if (session == null && !LLaMA.LLAMA_IsActive(0))
+        {
+            session = await llamaInstance.StartSession("You are Bellamy, a kind, energetic, casual and helpful person in a role playing game. You do not acknowledge that you are inside a game. You speak only english. You never use emojis. Your responses must never exceed 40 words. Every subordinate clause should be shorter than 10 words. You answer only with speech. You answer without extraneous actions. Always abstain from using markdown. You are now meeting the player (user) for the first time.");
+        }
+
         bool send = false;
 
         if (!enterPressed)
         {
-            if (Input.IsKeyPressed(Key.Enter))
+            if (Input.IsKeyPressed(Key.Enter) && !LLaMA.LLAMA_IsActive(0))
             {
                 send = true;
                 enterPressed = true;
@@ -120,8 +125,6 @@ public partial class Game : Node
                 chatInput.Editable = false;
 
                 locked = true;
-
-                session ??= llamaInstance.StartSession("You are Bellamy, a kind, energetic, casual and helpful person in a role playing game. You do not acknowledge that you are inside a game except when you are asked. You speak only english. You never use emojis. Your responses must never exceed 40 words. Every subordinate clause should be shorter than 10 words. You are now meeting the player (user) for the first time.");
 
                 var input = chatInput.Text + " ";
 

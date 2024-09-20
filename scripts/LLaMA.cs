@@ -21,7 +21,7 @@ namespace AIRPG
 	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
 	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	private static partial bool LLAMA_IsActive(UInt32 slotIndex);
+	public static partial bool LLAMA_IsActive(UInt32 slotIndex);
 
 	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
 	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
@@ -53,7 +53,7 @@ namespace AIRPG
 		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		private static partial bool LLAMA_IsActive(UInt32 slotIndex);
+		public static partial bool LLAMA_IsActive(UInt32 slotIndex);
 
 		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
@@ -121,7 +121,7 @@ namespace AIRPG
 			""seed"": " + seed + @",
             ""stop"": [""<|eot_id|>""],
             ""stream"": true,
-            ""temperature"": 1.2,
+            ""temperature"": 1,
 			""top_k"": 50
 			}"));
 
@@ -135,13 +135,13 @@ namespace AIRPG
 			{
 				var data = LLAMA_GetData(0, out int dataLength);
 
+				Game.SetProcessingInfo("Processing AI Response");
+
 				if (dataLength == 0)
 				{
 					await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 					continue;
 				}
-
-				Game.SetProcessingInfo("Processing AI Response");
 
 				if (firstByte == false)
 				{
@@ -165,12 +165,28 @@ namespace AIRPG
 			Game.SetProcessingInfo("AI Response finished", false);
 		}
 
-		public Session StartSession(string basePrompt)
+		public async Task<Session> StartSession(string basePrompt)
 		{
-			return new Session()
+			var session = new Session()
 			{
 				fullPrompt = new("<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n" + basePrompt + "<|eot_id|>")
 			};
+
+			LLAMA_Prompt(0, @"{
+            ""cache_prompt"": true,
+            ""n_predict"": 0,
+            ""prompt"": """ + System.Web.HttpUtility.JavaScriptStringEncode(session.fullPrompt.ToString()) + @"""
+			}");
+
+			while (LLAMA_IsActive(0))
+			{
+				Game.SetProcessingInfo("Initializing session");
+				await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			}
+
+			Game.SetProcessingInfo("Session started", false);
+
+			return session;
 		}
 
 		int delayPos = 0;

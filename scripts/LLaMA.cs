@@ -14,41 +14,73 @@ namespace AIRPG
 	{
 
 #if GODOT_MACOS
-		[LibraryImport("llama-server", SetLastError = true)]
+	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial IntPtr main(int argc, IntPtr argv);
+
+	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool LLAMA_IsActive(UInt32 slotIndex);
+
+	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial void LLAMA_Terminate();
+
+	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	public static partial bool LLAMA_Initialized();
+
+	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial int LLAMA_CheckLoops();
+
+	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial IntPtr LLAMA_GetData(UInt32 slotIndex, out int dataLength);
+
+	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool LLAMA_Prompt(UInt32 slotIndex, string text);
+#else
+		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 		private static partial IntPtr main(int argc, IntPtr argv);
 
-		[LibraryImport("llama-server", SetLastError = true)]
+		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static partial bool LLAMA_IsActive(UInt32 slotIndex);
 
-		[LibraryImport("llama-server", SetLastError = true)]
+		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static partial void LLAMA_Terminate();
 
-		[LibraryImport("llama-server", SetLastError = true)]
+		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static partial bool LLAMA_Initialized();
 
-		[LibraryImport("llama-server", SetLastError = true)]
-		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-		private static partial void LLAMA_DiscardData(IntPtr dataPointer);
-
-		[LibraryImport("llama-server", SetLastError = true)]
+		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 		private static partial int LLAMA_CheckLoops();
 
-		[LibraryImport("llama-server", SetLastError = true)]
+		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 		private static partial IntPtr LLAMA_GetData(UInt32 slotIndex, out int dataLength);
 
-		[LibraryImport("llama-server", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static partial bool LLAMA_Prompt(UInt32 slotIndex, string text);
+
+		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		private static partial void LLAMA_DiscardData(IntPtr data);
 #endif
 
 		private static LLaMA Instance;
@@ -63,7 +95,11 @@ namespace AIRPG
 
 		public void LoadLLaMALibrary()
 		{
-			NativeLibrary.Load("./llama-server");
+#if GODOT_MACOS
+			NativeLibrary.Load(ProjectSettings.GlobalizePath("res://llama/macos-arm64/llama-server"));
+#else
+			NativeLibrary.Load(ProjectSettings.GlobalizePath("res://llama/win-x64/llama-server.dll"));
+#endif
 		}
 
 		public async Task Generate(Session session, string text, int predictTokens = 256, float repeatPenalty = 1.2f, float temperature = 1f)
@@ -312,7 +348,7 @@ namespace AIRPG
 			{
 				try
 				{
-					string[] args = ["server", "--model", ProjectSettings.GlobalizePath("res://model.gguf"), "--n-gpu-layers", gpuLayers.ToString(), "--threads", cpuThreads.ToString(), "--flash-attn", "-ctk", "q8_0", "-ctv", "q8_0", "-c", contextSize.ToString(), "--parallel", maximumSessions.ToString()];
+					string[] args = ["server", "--model", ProjectSettings.GlobalizePath("res://model.gguf"), "--n-gpu-layers", gpuLayers.ToString(), "--threads", cpuThreads.ToString(), "--threads-batch", (cpuThreads * 2).ToString(), "--flash-attn", "-ctk", "q8_0", "-ctv", "q8_0", "-c", contextSize.ToString(), "--parallel", maximumSessions.ToString()];
 
 					int argc = args.Length;
 					var argv = new IntPtr[argc];

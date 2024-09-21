@@ -26,61 +26,62 @@ public partial class TextToSpeech : Node
     public bool allowCuda = false;
 
 #if GODOT_MACOS
-    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true)]
-#elif GODOT_PC
-    [LibraryImport("ttslib-win-x64.dll", SetLastError = true)]
-#endif
-    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    private static partial void LoadVoice(int modelDataLength, byte[] modelData);
+	[LibraryImport("tts/macos-arm64/piper_lib.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial void LoadVoice(int modelDataLength, byte[] modelData);
 
-#if GODOT_MACOS
-    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
-#elif GODOT_PC
-    [LibraryImport("ttslib-win-x64.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
-#endif
-    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    private static partial void LoadIPAData(string path);
+	[LibraryImport("tts/macos-arm64/piper_lib.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial void LoadIPAData(string path);
 
-#if GODOT_MACOS
-    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true)]
-#elif GODOT_PC
-    [LibraryImport("ttslib-win-x64.dll", SetLastError = true)]
-#endif
-    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    private static partial void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, float fadeTimeSeconds, [MarshalAs(UnmanagedType.Bool)] bool useCuda);
+	[LibraryImport("tts/macos-arm64/piper_lib.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, float fadeTimeSeconds, [MarshalAs(UnmanagedType.Bool)] bool useCuda);
 
-#if GODOT_MACOS
-    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true)]
-#elif GODOT_PC
-    [LibraryImport("ttslib-win-x64.dll", SetLastError = true)]
-#endif
-    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    private static partial void SetWriteToFile([MarshalAs(UnmanagedType.Bool)] bool path);
+	[LibraryImport("tts/macos-arm64/piper_lib.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial void SetWriteToFile([MarshalAs(UnmanagedType.Bool)] bool path);
 
-#if GODOT_MACOS
-    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
-#elif GODOT_PC
-    [LibraryImport("ttslib-win-x64.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
-#endif
-    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    private static partial void SetOutputDirectory(string path);
+	[LibraryImport("tts/macos-arm64/piper_lib.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial void SetOutputDirectory(string path);
 
-#if GODOT_MACOS
-    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
-#elif GODOT_PC
-    [LibraryImport("ttslib-win-x64.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
-#endif
-    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    private static partial IntPtr GenerateVoiceData(out int dataLength, string text);
+	[LibraryImport("tts/macos-arm64/piper_lib.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial IntPtr GenerateVoiceData(out int dataLength, string text);
 
-#if GODOT_MACOS
-    [LibraryImport("ttslib-macos-arm64.dylib", SetLastError = true)]
-#elif GODOT_PC
-    [LibraryImport("ttslib-win-x64.dll", SetLastError = true)]
-#endif
+	[LibraryImport("tts/macos-arm64/piper_lib.dylib", SetLastError = true)]
+	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static partial void DiscardVoiceData(IntPtr data);
+#else
+    [LibraryImport("tts\\win-x64\\piper_lib.dll", SetLastError = true)]
     [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
     private static partial void DiscardVoiceData(IntPtr data);
 
+    [LibraryImport("tts\\win-x64\\piper_lib.dll", SetLastError = true)]
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void LoadVoice(int modelDataLength, byte[] modelData);
+
+    [LibraryImport("tts\\win-x64\\piper_lib.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void LoadIPAData(string path);
+
+    [LibraryImport("tts\\win-x64\\piper_lib.dll", SetLastError = true)]
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, float fadeTimeSeconds, [MarshalAs(UnmanagedType.Bool)] bool useCuda);
+
+    [LibraryImport("tts\\win-x64\\piper_lib.dll", SetLastError = true)]
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void SetWriteToFile([MarshalAs(UnmanagedType.Bool)] bool path);
+
+    [LibraryImport("tts\\win-x64\\piper_lib.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial void SetOutputDirectory(string path);
+
+    [LibraryImport("tts\\win-x64\\piper_lib.dll", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+    [UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static partial IntPtr GenerateVoiceData(out int dataLength, string text);
+#endif
 
     public static async Task<AudioStreamWav> Generate(string speaker, string text)
     {
@@ -119,7 +120,7 @@ public partial class TextToSpeech : Node
         {
             try
             {
-                ApplySynthesisConfig(1.4f, 0.3f, 0.66f, res, 0.35f, 0.11f, allowCuda);
+                ApplySynthesisConfig(1.35f, 0.33f, 1f / 1.35f, res, 0.35f, 0.11f, allowCuda);
                 var data = GenerateVoiceData(out var dataLength, text);
                 byte[] byteData = new byte[dataLength];
                 Marshal.Copy(data, byteData, 0, dataLength);
@@ -153,11 +154,14 @@ public partial class TextToSpeech : Node
 
     public override async void _Ready()
     {
+
 #if GODOT_MACOS
-        NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/macos-arm64/libonnxruntime.1.18.0.dylib"));
-#elif GODOT_PC
+		NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/macos-arm64/onnx.dylib"));
+		NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/macos-arm64/piper_lib.dylib"));
+#else
         NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/win-x64/onnxruntime.dll"));
         NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/win-x64/onnxruntime_providers_shared.dll"));
+        NativeLibrary.Load(ProjectSettings.GlobalizePath("res://tts/win-x64/piper_lib.dll"));
 #endif
         instance = this;
         tree = GetTree();

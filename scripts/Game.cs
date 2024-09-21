@@ -27,18 +27,25 @@ public partial class Game : Node
 
     public int processingStep = 0;
 
-    LLaMA llamaInstace;
+    LLaMA llamaInstance;
 
-    public override void _Ready()
+    public override async void _Ready()
     {
-        llamaInstace = FindChild("llama") as LLaMA;
+        llamaInstance = FindChild("llama") as LLaMA;
         processingText = FindChild("processing_text") as Label;
         chatHistory = FindChild("chat_history") as Label;
         chatInput = FindChild("chat_input") as LineEdit;
         Instance = this;
 
-        llamaInstace.LoadLLaMALibrary();
-        llamaInstace.StartLLaMA(33, 2, 1, 4096);
+        llamaInstance.LoadLLaMALibrary();
+        llamaInstance.StartLLaMA(33, 5, 1, 4096);
+
+        while (!LLaMA.LLAMA_Initialized())
+        {
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        }
+
+
     }
 
     public void SetText(string text)
@@ -66,11 +73,16 @@ public partial class Game : Node
     {
         if (!LLaMA.LLAMA_Initialized()) return;
 
+        if (session == null && !LLaMA.LLAMA_IsActive(0))
+        {
+            session = await llamaInstance.StartSession("You are Bellamy, a kind, energetic, casual and helpful person in a role playing game. You do not acknowledge that you are inside a game. You speak only english. You never use emojis. Your responses must never exceed 40 words. Every subordinate clause should be shorter than 10 words. You answer only with speech. You answer without extraneous actions. Always abstain from using markdown. You are now meeting the player (user) for the first time.");
+        }
+
         bool send = false;
 
         if (!enterPressed)
         {
-            if (Input.IsKeyPressed(Key.Enter))
+            if (Input.IsKeyPressed(Key.Enter) && !LLaMA.LLAMA_IsActive(0))
             {
                 send = true;
                 enterPressed = true;
@@ -114,11 +126,9 @@ public partial class Game : Node
 
                 locked = true;
 
-                session ??= llamaInstace.StartSession("You are Bellamy, a kind, energetic, casual and helpful person in a role playing game. You do not acknowledge that you are inside a game except when you are asked. You speak only english. You never use emojis. Your respomses must never exceed 40 words. Every subordinate clause should be shorter than 10 words. You are now meeting the player (user) for the first time.");
-
                 var input = chatInput.Text + " ";
 
-                var promptTask = llamaInstace.Generate(session, input);
+                var promptTask = llamaInstance.Generate(session, input);
 
                 while (!promptTask.IsCompleted)
                 {
@@ -139,7 +149,7 @@ public partial class Game : Node
         if (chatHistory != null && session != null && session.fullPrompt != null)
         {
             chatHistory.Text = session.fullPrompt.ToString().Replace("\n\n", "\n")
-            .Replace("<|beginning_of_text|>", "")
+            .Replace("<|begin_of_text|>", "")
             .Replace("<|start_header_id|>system<|end_header_id|>\n", "System Prompt:\n")
             .Replace("<|start_header_id|>user<|end_header_id|>\n", "Player:\n")
             .Replace("<|start_header_id|>assistant<|end_header_id|>\n", "Bellamy:\n")

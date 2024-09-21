@@ -14,37 +14,41 @@ namespace AIRPG
 	{
 
 #if GODOT_MACOS
-	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
-	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-	private static partial IntPtr main(int argc, IntPtr argv);
+		[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		private static partial IntPtr main(int argc, IntPtr argv);
 
-	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
-	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	public static partial bool LLAMA_IsActive(UInt32 slotIndex);
+		[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static partial bool LLAMA_IsActive(UInt32 slotIndex);
 
-	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
-	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	private static partial void LLAMA_Terminate();
+		[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static partial void LLAMA_Terminate();
 
-	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
-	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	public static partial bool LLAMA_Initialized();
+		[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static partial bool LLAMA_Initialized();
 
-	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
-	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-	private static partial int LLAMA_CheckLoops();
+		[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		private static partial int LLAMA_CheckLoops();
 
-	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
-	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-	private static partial IntPtr LLAMA_GetData(UInt32 slotIndex, out int dataLength);
+		[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		private static partial IntPtr LLAMA_GetData(UInt32 slotIndex, out int dataLength);
 
-	[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
-	[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	private static partial bool LLAMA_Prompt(UInt32 slotIndex, string text);
+		[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static partial bool LLAMA_Prompt(UInt32 slotIndex, string text);
+
+		[LibraryImport("llama/macos-arm64/llama-server.dylib", SetLastError = true)]
+		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+		private static partial void LLAMA_DiscardData(IntPtr data);
 #else
 		[LibraryImport("llama\\win-x64\\llama-server.dll", SetLastError = true)]
 		[UnmanagedCallConv(CallConvs = new Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
@@ -96,7 +100,7 @@ namespace AIRPG
 		public void LoadLLaMALibrary()
 		{
 #if GODOT_MACOS
-			NativeLibrary.Load(ProjectSettings.GlobalizePath("res://llama/macos-arm64/llama-server"));
+			NativeLibrary.Load(ProjectSettings.GlobalizePath("res://llama/macos-arm64/llama-server.dylib"));
 #else
 			NativeLibrary.Load(ProjectSettings.GlobalizePath("res://llama/win-x64/llama-server.dll"));
 #endif

@@ -21,6 +21,7 @@ config/icon="res://icon.svg"
 driver/output_latency=100
 driver/enable_input=true
 input/transcribe/max_tokens=64
+input/transcribe/use_gpu=false
 
 [display]
 
